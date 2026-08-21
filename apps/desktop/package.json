@@ -1,0 +1,30 @@
+{
+  "name": "@ai-quality/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/main/index.js",
+  "scripts": {
+    "build": "tsc -b ../../tsconfig.json && node scripts/build-preload.js && vite build",
+    "dev": "node scripts/dev.js",
+    "start": "electron .",
+    "smoke": "AI_QUALITY_ELECTRON_SMOKE=1 electron .",
+    "test": "node --test dist/main/security.test.js dist/main/protocol.test.js dist/main/ipc/sender-validation.test.js dist/main/ipc/ipc-handlers.test.js dist/main/ipc/database-handlers.test.js dist/main/ipc/project-handlers.test.js dist/main/ipc/logging-handlers.test.js dist/main/logging/error-handlers.test.js dist/preload/preload.test.js dist/main/navigation.test.js dist/main/ui-components.test.js dist/main/projects-ui.test.js dist/main/dashboard-ui.test.js dist/main/error-boundary-ui.test.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-quality/contracts": "*",
+    "@ai-quality/core": "*",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "electron": "43.4.1",
+    "esbuild": "^0.28.2",
+    "vite": "^8.2.2"
+  }
+}

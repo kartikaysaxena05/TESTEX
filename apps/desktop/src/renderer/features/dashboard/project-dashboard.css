@@ -1,0 +1,199 @@
+/**
+ * @file apps/desktop/src/renderer/features/dashboard/project-dashboard.css
+ * Styling tokens and responsive grid layout for Project Dashboard.
+ */
+
+.project-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1400px;
+}
+
+/* Header Section */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-border-subtle, #333);
+}
+
+.dashboard-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.dashboard-header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dashboard-project-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #fff);
+  letter-spacing: -0.01em;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.dashboard-project-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-secondary, #999);
+  max-width: 900px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.dashboard-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Snapshot Grid */
+.dashboard-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-snapshot-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-snapshot-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.snapshot-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.snapshot-label {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted, #777);
+}
+
+.snapshot-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary, #fff);
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Environment Overview Section */
+.dashboard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboard-section-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary, #fff);
+}
+
+.dashboard-section-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary, #999);
+}
+
+.env-url-text {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: var(--color-text-secondary, #aaa);
+  overflow-wrap: break-word;
+  word-break: break-all;
+  max-width: 450px;
+}
+
+/* Quality Workspace Grid */
+.quality-workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1200px) {
+  .quality-workspace-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .quality-workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quality-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 140px;
+}
+
+.quality-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted, #888);
+  margin-top: 4px;
+}
+
+.quality-card-note {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-secondary, #999);
+  margin: 8px 0 0 0;
+}
+
+/* Traceability Banner */
+.traceability-card {
+  grid-column: 1 / -1;
+  background: var(--color-bg-secondary, #1e1e1e);
+  border: 1px solid var(--color-border-subtle, #333);
+}
+
+/* Skeletons */
+.dashboard-skeleton-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}

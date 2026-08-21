@@ -1,0 +1,1873 @@
+// ==============================================================================
+// AI-Driven Software Quality Engineering Platform
+// Prisma Schema — Core Project, Source, Git, Index, Architecture, Run Config, Snapshot & Requirement Models (PostgreSQL)
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------------------
+// Enums
+// ------------------------------------------------------------------------------
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum EnvironmentType {
+  LOCAL
+  DEVELOPMENT
+  TEST
+  STAGING
+  PRODUCTION
+  CUSTOM
+}
+
+enum ProjectSourceKind {
+  LOCAL_DIRECTORY
+}
+
+enum GitSourceRelation {
+  ROOT
+  NESTED
+  UNKNOWN
+}
+
+enum IndexStatus {
+  INDEXED
+  SKIPPED
+  ERROR
+  STALE
+}
+
+enum IndexRunStatus {
+  RUNNING
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
+enum SymbolKind {
+  FUNCTION
+  CLASS
+  INTERFACE
+  TYPE
+  ENUM
+  VARIABLE
+  CONSTANT
+  METHOD
+  MODULE
+  UNKNOWN
+}
+
+enum ImportKind {
+  LOCAL
+  EXTERNAL
+  DYNAMIC
+  UNKNOWN
+}
+
+enum ApplicationKind {
+  WEB_FRONTEND
+  WEB_BACKEND
+  FULL_STACK_WEB
+  CLI
+  LIBRARY
+  DESKTOP
+  MOBILE
+  SERVICE
+  MULTI_APPLICATION
+  UNKNOWN
+}
+
+enum EntryPointKind {
+  APPLICATION
+  SERVER
+  CLIENT
+  CLI
+  LIBRARY
+  FRAMEWORK_ENTRY
+  UNKNOWN
+}
+
+enum ArchitectureConfidence {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ArchitectureAnalysisStatus {
+  CURRENT
+  STALE
+  NOT_ANALYZED
+}
+
+enum ArchitectureSignalKind {
+  LAYERED_STRUCTURE
+  MVC_LIKE_STRUCTURE
+  FEATURE_BASED_STRUCTURE
+  MONOREPO_STRUCTURE
+  FRONTEND_BACKEND_SPLIT
+  DOMAIN_ORIENTED_STRUCTURE
+  FRAMEWORK_CONVENTIONAL_STRUCTURE
+  UNKNOWN
+}
+
+enum StartupKind {
+  PACKAGE_SCRIPT
+  RUNTIME_ENTRY
+  FRAMEWORK_COMMAND
+  CUSTOM
+  UNKNOWN
+}
+
+enum RunConfigSafety {
+  SAFE_STRUCTURE
+  REQUIRES_REVIEW
+  UNSUPPORTED
+}
+
+enum RunConfigSource {
+  DETECTED
+  USER_SELECTED
+}
+
+enum RunConfigStatus {
+  CONFIGURED
+  NEEDS_REVIEW
+}
+
+enum SnapshotStatus {
+  COMPLETE
+  PARTIAL
+  FAILED
+}
+
+enum SnapshotKind {
+  MANUAL_BASELINE
+  INDEX_BASELINE
+}
+
+enum FileChangeType {
+  ADDED
+  MODIFIED
+  DELETED
+  RENAMED
+  UNCHANGED
+}
+
+enum RequirementSourceType {
+  MANUAL
+  PASTED_TEXT
+  DOCUMENT
+}
+
+enum RequirementSourceStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum RequirementType {
+  FUNCTIONAL
+  NON_FUNCTIONAL
+  BUSINESS_RULE
+  SECURITY
+  PERFORMANCE
+  USABILITY
+  DATA
+  INTEGRATION
+  CONSTRAINT
+  UNKNOWN
+}
+
+enum RequirementPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  UNSPECIFIED
+}
+
+enum RequirementStatus {
+  DRAFT
+  ACTIVE
+  DEPRECATED
+  ARCHIVED
+}
+
+enum CandidateReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  IMPORTED
+}
+
+enum ProvenanceSourceKind {
+  MANUAL
+  PASTED_TEXT
+  DOCUMENT
+}
+
+enum ProvenanceLocationKind {
+  NONE
+  PASTE_LINE
+  DOCUMENT_BLOCK
+  TABLE_ROW
+  PDF_PAGE
+}
+
+enum ProvenanceCompleteness {
+  COMPLETE
+  PARTIAL
+  MINIMAL
+}
+
+enum SourceIntegrityStatus {
+  VERIFIED
+  MISSING_FILE
+  HASH_MISMATCH
+  PARTIAL
+  SOURCE_RECORD_MISSING
+}
+
+enum RequirementModality {
+  SHALL
+  MUST
+  SHALL_NOT
+  MUST_NOT
+  SHOULD
+  MAY
+  REQUIRED_TO
+  UNSPECIFIED
+}
+
+enum NormalizationStatus {
+  NOT_NORMALIZED
+  NORMALIZED
+  REVIEWED
+  STALE
+}
+
+enum NormalizationMethod {
+  DETERMINISTIC
+  MANUAL
+  DETERMINISTIC_REVIEWED
+}
+
+enum RepresentationReviewStatus {
+  GENERATED
+  REVIEWED
+}
+
+enum RequirementCategory {
+  FUNCTIONAL
+  NON_FUNCTIONAL
+  BUSINESS_RULE
+  INTERFACE
+  DATA
+  COMPLIANCE
+  CONSTRAINT
+  UNKNOWN
+}
+
+enum RequirementSubCategory {
+  PERFORMANCE
+  SECURITY
+  USABILITY
+  RELIABILITY
+  AVAILABILITY
+  SCALABILITY
+  MAINTAINABILITY
+  ACCESSIBILITY
+  COMPATIBILITY
+  PORTABILITY
+  OBSERVABILITY
+  RECOVERABILITY
+  RETENTION
+  INTEGRATION
+  TECHNICAL_CONSTRAINT
+  BUSINESS_LOGIC
+}
+
+enum RequirementRiskLevel {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  UNSPECIFIED
+}
+
+enum RequirementCriticality {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  UNSPECIFIED
+}
+
+enum ClassificationMethod {
+  DETERMINISTIC
+  MANUAL
+  DETERMINISTIC_REVIEWED
+}
+
+enum ClassificationReviewStatus {
+  GENERATED
+  REVIEWED
+}
+
+enum RequirementTestabilityStatus {
+  TESTABLE
+  PARTIALLY_TESTABLE
+  NOT_TESTABLE
+  UNDETERMINED
+}
+
+enum QualityAnalysisMethod {
+  DETERMINISTIC
+  DETERMINISTIC_REVIEWED
+  MANUAL
+}
+
+enum QualityFindingSeverity {
+  ERROR
+  WARNING
+  INFO
+}
+
+enum QualityFindingReviewStatus {
+  OPEN
+  ACKNOWLEDGED
+  DISMISSED
+}
+
+enum QualityFindingCategory {
+  AMBIGUITY
+  COMPLETENESS
+  TESTABILITY
+  SPECIFICITY
+  MEASURABILITY
+  CONSISTENCY
+  ATOMICITY
+}
+
+enum RequirementRelationshipType {
+  DEPENDS_ON
+  REQUIRED_BY
+  REFINES
+  REFINED_BY
+  PARENT_OF
+  CHILD_OF
+  CONSTRAINS
+  CONSTRAINED_BY
+  RELATED_TO
+  CONFLICTS_WITH
+  DUPLICATES
+  OVERLAPS_WITH
+}
+
+enum RelationshipDetectionMethod {
+  EXPLICIT_REFERENCE
+  SOURCE_HIERARCHY
+  DETERMINISTIC_RULE
+  MANUAL
+  DETERMINISTIC_REVIEWED
+}
+
+enum RelationshipStatus {
+  PROPOSED
+  CONFIRMED
+  REJECTED
+}
+
+enum RepositoryEvidenceType {
+  FILE
+  SYMBOL
+  ROUTE
+  API_ENDPOINT
+  COMPONENT
+  SERVICE
+  DATABASE_MODEL
+  CONFIGURATION
+  TEST_FILE
+  ENTRY_POINT
+  OTHER
+}
+
+enum EvidenceMatchMethod {
+  EXACT_SYMBOL
+  EXACT_FILE_TOKEN
+  ROUTE_TOKEN_MATCH
+  DOMAIN_MATCH
+  ACTION_OBJECT_MATCH
+  TECHNICAL_IDENTIFIER
+  MANUAL
+  DETERMINISTIC_REVIEWED
+}
+
+enum RepositoryEvidenceStatus {
+  CANDIDATE
+  CONFIRMED
+  REJECTED
+}
+
+enum RequirementChangeKind {
+  CREATED
+  BASELINE_CAPTURE
+  TEXT_CHANGED
+  TITLE_CHANGED
+  TYPE_CHANGED
+  PRIORITY_CHANGED
+  STATUS_CHANGED
+  MULTIPLE_FIELDS_CHANGED
+  RESTORED_VERSION
+}
+
+enum RequirementImpactType {
+  DEPENDENT_REQUIREMENT
+  PARENT_REQUIREMENT
+  CHILD_REQUIREMENT
+  CONSTRAINED_REQUIREMENT
+  RELATED_REQUIREMENT
+  CONFLICT_REVIEW
+  REPOSITORY_EVIDENCE
+  REPOSITORY_FILE
+  REPOSITORY_SYMBOL
+}
+
+enum RequirementImpactStatus {
+  OPEN
+  REVIEWED
+  NOT_IMPACTED
+  ACTION_REQUIRED
+}
+
+enum VectorSubjectType {
+  REQUIREMENT
+  REQUIREMENT_VERSION
+  DOCUMENT_SECTION
+  REPOSITORY_ENTITY
+}
+
+enum VectorEmbeddingStatus {
+  CURRENT
+  STALE
+  INVALIDATED
+}
+
+enum AiAnalysisStatus {
+  CURRENT
+  STALE
+  FAILED
+}
+
+enum ScenarioGenerationStatus {
+  GENERATED
+  NO_SCENARIOS
+  INSUFFICIENT_INFORMATION
+  FAILED
+  STALE
+}
+
+enum TestDesignStatus {
+  CURRENT
+  STALE
+  FAILED
+  REQUIRES_REVIEW
+  INSUFFICIENT_INFORMATION
+}
+
+enum TestDesignApplicability {
+  APPLICABLE
+  PARTIALLY_APPLICABLE
+  INSUFFICIENT_INFORMATION
+  NOT_TESTABLE
+  REQUIRES_CLARIFICATION
+}
+
+enum AutomationSuitability {
+  HIGH
+  MEDIUM
+  LOW
+  UNKNOWN
+}
+
+enum TestCaseType {
+  POSITIVE
+  NEGATIVE
+  BOUNDARY
+  VALIDATION
+  SECURITY
+  PERFORMANCE
+  ACCESSIBILITY
+  COMPATIBILITY
+  REGRESSION
+  SMOKE
+  EXPLORATORY
+  END_TO_END
+  INTEGRATION
+  UNIT
+  OTHER
+}
+
+enum TestCasePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+  UNSPECIFIED
+}
+
+enum TestCaseStatus {
+  DRAFT
+  GENERATED
+  ACTIVE
+  DEPRECATED
+}
+
+enum TestReviewStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum TestCaseVersionSource {
+  INITIAL_AI_GENERATION
+  AI_REGENERATION
+  HUMAN_EDIT
+  SYSTEM_MIGRATION
+  IMPORT
+}
+
+enum TestReviewAction {
+  SUBMITTED_FOR_REVIEW
+  APPROVED
+  REJECTED
+  EDITED
+  REGENERATED
+}
+
+enum TestCaseRejectionReason {
+  INVALID_EXPECTED_RESULT
+  UNSUPPORTED_ASSUMPTION
+  DUPLICATE_TEST
+  INCORRECT_PRECONDITION
+  POOR_TEST_DATA
+  NOT_RELEVANT
+  INSUFFICIENT_COVERAGE
+  REQUIREMENT_AMBIGUOUS
+  OTHER
+}
+
+enum TestCaseExecutionSuitability {
+  AUTOMATED
+  MANUAL
+  SEMI_AUTOMATED
+  UNKNOWN
+}
+
+enum PreconditionCategory {
+  AUTHENTICATION
+  AUTHORIZATION
+  APPLICATION_STATE
+  DATA_STATE
+  ACCOUNT_STATE
+  RESOURCE_STATE
+  CONFIGURATION
+  FEATURE_FLAG
+  ENVIRONMENT
+  DEPENDENCY
+  SESSION_STATE
+  WORKFLOW_STATE
+  NONE
+  OTHER
+}
+
+enum TestValidationStatus {
+  VALID
+  REVIEW_REQUIRED
+  REJECTED
+  VALIDATION_ERROR
+}
+
+enum TestValidationSeverity {
+  INFO
+  WARNING
+  ERROR
+  BLOCKER
+}
+
+enum TraceOrigin {
+  GENERATED
+  MANUAL
+  DERIVED
+  IMPORTED
+}
+
+enum TraceStatus {
+  CURRENT
+  STALE
+  REVIEW_REQUIRED
+}
+
+// ------------------------------------------------------------------------------
+// Models
+// ------------------------------------------------------------------------------
+
+model Project {
+  id          String        @id @default(uuid()) @db.Uuid
+  name        String        @db.VarChar(120)
+  description String?       @db.Text
+  status      ProjectStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  settings                       ProjectSettings?
+  environments                   ProjectEnvironment[]
+  source                         ProjectSource?
+  requirementSources             RequirementSource[]
+  requirements                   Requirement[]
+  requirementDocuments           RequirementDocument[]
+  requirementDocumentExtractions RequirementDocumentExtraction[]
+  requirementCandidates          RequirementCandidate[]
+  requirementProvenances         RequirementProvenance[]
+  requirementRepresentations     RequirementRepresentation[]
+  requirementMetadata            RequirementMetadata[]
+  requirementQualityAnalyses     RequirementQualityAnalysis[]
+  requirementQualityFindings     RequirementQualityFinding[]
+  requirementRelationships       RequirementRelationship[]
+  requirementRepositoryEvidence  RequirementRepositoryEvidence[]
+  requirementVersions            RequirementVersion[]
+  requirementChangeImpacts       RequirementChangeImpact[]
+  requirementSequence            ProjectRequirementSequence?
+  vectorEmbeddings               VectorEmbedding[]
+  requirementAiAnalyses          RequirementAiAnalysis[]
+  requirementTestDesigns         RequirementTestDesign[]
+  requirementScenarioGenerations RequirementScenarioGeneration[]
+  requirementScenarioCandidates  RequirementScenarioCandidate[]
+  testCaseSequence               ProjectTestCaseSequence?
+  testCases                      TestCase[]
+  testCaseValidations            TestCaseValidation[]
+  testTraces                     RequirementTestTrace[]
+  testCaseVersions               TestCaseVersion[]
+  testCaseReviewEvents           TestCaseReviewEvent[]
+
+  @@index([status])
+  @@map("projects")
+}
+
+model ProjectSettings {
+  projectId String   @id @map("project_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_settings")
+}
+
+model ProjectEnvironment {
+  id        String          @id @default(uuid()) @db.Uuid
+  projectId String          @map("project_id") @db.Uuid
+  name      String          @db.VarChar(80)
+  type      EnvironmentType @default(DEVELOPMENT)
+  baseUrl   String?         @map("base_url") @db.VarChar(2048)
+  isDefault Boolean         @default(false) @map("is_default")
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, name])
+  @@index([projectId])
+  @@index([projectId, type])
+  @@map("project_environments")
+}
+
+model ProjectSource {
+  id                       String            @id @default(uuid()) @db.Uuid
+  projectId                String            @unique @map("project_id") @db.Uuid
+  kind                     ProjectSourceKind @default(LOCAL_DIRECTORY)
+  displayName              String            @map("display_name") @db.VarChar(255)
+  rootPath                 String            @map("root_path") @db.VarChar(4096)
+  identityFingerprint      String?           @map("identity_fingerprint") @db.VarChar(64)
+  activeBaselineSnapshotId String?           @map("active_baseline_snapshot_id") @db.Uuid
+  filesystemCreatedAt      DateTime?         @map("filesystem_created_at")
+  filesystemModifiedAt     DateTime?         @map("filesystem_modified_at")
+  metadataRefreshedAt      DateTime?         @map("metadata_refreshed_at")
+  lastValidatedAt          DateTime?         @map("last_validated_at")
+  createdAt                DateTime          @default(now()) @map("created_at")
+  updatedAt                DateTime          @updatedAt @map("updated_at")
+
+  project                       Project                         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  gitMetadata                   ProjectGitMetadata?
+  indexRuns                     RepositoryIndexRun[]
+  repositoryFiles               RepositoryFile[]
+  architectureAnalysis          RepositoryArchitectureAnalysis?
+  runConfigurations             ProjectRunConfiguration[]
+  snapshots                     RepositorySnapshot[]
+  requirementRepositoryEvidence RequirementRepositoryEvidence[]
+
+  @@map("project_sources")
+}
+
+model ProjectGitMetadata {
+  id                         String            @id @default(uuid()) @db.Uuid
+  sourceId                   String            @unique @map("source_id") @db.Uuid
+  isGitRepository            Boolean           @map("is_git_repository")
+  repositoryRoot             String?           @map("repository_root") @db.VarChar(4096)
+  sourceRelationToRepository GitSourceRelation @default(UNKNOWN) @map("source_relation_to_repository")
+  currentBranch              String?           @map("current_branch") @db.VarChar(255)
+  headCommit                 String?           @map("head_commit") @db.VarChar(64)
+  isDetachedHead             Boolean           @default(false) @map("is_detached_head")
+  lastCheckedAt              DateTime          @default(now()) @map("last_checked_at")
+  createdAt                  DateTime          @default(now()) @map("created_at")
+  updatedAt                  DateTime          @updatedAt @map("updated_at")
+
+  source ProjectSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@map("project_git_metadata")
+}
+
+model RepositoryIndexRun {
+  id                       String         @id @default(uuid()) @db.Uuid
+  sourceId                 String         @map("source_id") @db.Uuid
+  status                   IndexRunStatus @default(RUNNING)
+  schemaVersion            Int            @default(1) @map("schema_version")
+  parserVersion            Int            @default(1) @map("parser_version")
+  filesEligible            Int            @default(0) @map("files_eligible")
+  filesIndexed             Int            @default(0) @map("files_indexed")
+  filesSkipped             Int            @default(0) @map("files_skipped")
+  filesFailed              Int            @default(0) @map("files_failed")
+  symbolsIndexed           Int            @default(0) @map("symbols_indexed")
+  importsIndexed           Int            @default(0) @map("imports_indexed")
+  exportsIndexed           Int            @default(0) @map("exports_indexed")
+  unsupportedLanguageFiles Int            @default(0) @map("unsupported_language_files")
+  durationMs               Int?           @map("duration_ms")
+  truncated                Boolean        @default(false)
+  warnings                 String[]       @default([])
+  startedAt                DateTime       @default(now()) @map("started_at")
+  completedAt              DateTime?      @map("completed_at")
+
+  source               ProjectSource                    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  architectureAnalyses RepositoryArchitectureAnalysis[]
+  snapshots            RepositorySnapshot[]
+
+  @@index([sourceId])
+  @@index([sourceId, status])
+  @@map("repository_index_runs")
+}
+
+model RepositoryFile {
+  id             String      @id @default(uuid()) @db.Uuid
+  sourceId       String      @map("source_id") @db.Uuid
+  relativePath   String      @map("relative_path") @db.VarChar(1024)
+  name           String      @db.VarChar(255)
+  extension      String?     @db.VarChar(64)
+  language       String?     @db.VarChar(64)
+  classification String      @db.VarChar(64)
+  sizeBytes      Int         @map("size_bytes")
+  contentHash    String?     @map("content_hash") @db.VarChar(64)
+  indexStatus    IndexStatus @default(INDEXED) @map("index_status")
+  indexedAt      DateTime    @default(now()) @map("indexed_at")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  source                        ProjectSource                   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  symbols                       RepositorySymbol[]
+  imports                       RepositoryImport[]
+  requirementRepositoryEvidence RequirementRepositoryEvidence[]
+
+  @@unique([sourceId, relativePath])
+  @@index([sourceId])
+  @@index([sourceId, language])
+  @@index([sourceId, classification])
+  @@index([sourceId, indexStatus])
+  @@map("repository_files")
+}
+
+model RepositorySymbol {
+  id               String     @id @default(uuid()) @db.Uuid
+  repositoryFileId String     @map("repository_file_id") @db.Uuid
+  name             String     @db.VarChar(255)
+  kind             SymbolKind @default(UNKNOWN)
+  startLine        Int        @map("start_line")
+  endLine          Int        @map("end_line")
+  isExported       Boolean    @default(false) @map("is_exported")
+  createdAt        DateTime   @default(now()) @map("created_at")
+
+  repositoryFile                RepositoryFile                  @relation(fields: [repositoryFileId], references: [id], onDelete: Cascade)
+  requirementRepositoryEvidence RequirementRepositoryEvidence[]
+
+  @@index([repositoryFileId])
+  @@index([name])
+  @@index([repositoryFileId, kind])
+  @@map("repository_symbols")
+}
+
+model RepositoryImport {
+  id                   String     @id @default(uuid()) @db.Uuid
+  repositoryFileId     String     @map("repository_file_id") @db.Uuid
+  specifier            String     @db.VarChar(1024)
+  importKind           ImportKind @default(LOCAL) @map("import_kind")
+  resolvedRelativePath String?    @map("resolved_relative_path") @db.VarChar(1024)
+  isExternal           Boolean    @default(false) @map("is_external")
+  lineNumber           Int        @map("line_number")
+  createdAt            DateTime   @default(now()) @map("created_at")
+
+  repositoryFile RepositoryFile @relation(fields: [repositoryFileId], references: [id], onDelete: Cascade)
+
+  @@index([repositoryFileId])
+  @@index([repositoryFileId, isExternal])
+  @@index([resolvedRelativePath])
+  @@map("repository_imports")
+}
+
+model RepositoryArchitectureAnalysis {
+  id                   String                     @id @default(uuid()) @db.Uuid
+  sourceId             String                     @unique @map("source_id") @db.Uuid
+  indexRunId           String?                    @map("index_run_id") @db.Uuid
+  status               ArchitectureAnalysisStatus @default(CURRENT)
+  architectureVersion  Int                        @default(1) @map("architecture_version")
+  primaryKind          ApplicationKind            @default(UNKNOWN) @map("primary_kind")
+  confidence           ArchitectureConfidence     @default(LOW)
+  applicationKindsJson Json                       @map("application_kinds_json")
+  applicationUnitsJson Json                       @map("application_units_json")
+  entryCandidatesJson  Json                       @map("entry_candidates_json")
+  structuralAreasJson  Json                       @map("structural_areas_json")
+  signalsJson          Json                       @map("signals_json")
+  moduleHubsJson       Json                       @map("module_hubs_json")
+  warnings             String[]                   @default([])
+  analyzedAt           DateTime                   @default(now()) @map("analyzed_at")
+  createdAt            DateTime                   @default(now()) @map("created_at")
+  updatedAt            DateTime                   @updatedAt @map("updated_at")
+
+  source   ProjectSource       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  indexRun RepositoryIndexRun? @relation(fields: [indexRunId], references: [id], onDelete: SetNull)
+
+  @@index([sourceId])
+  @@index([indexRunId])
+  @@map("repository_architecture_analyses")
+}
+
+model ProjectRunConfiguration {
+  id                       String                 @id @default(uuid()) @db.Uuid
+  sourceId                 String                 @map("source_id") @db.Uuid
+  applicationUnitRoot      String                 @default(".") @map("application_unit_root") @db.VarChar(1024)
+  runtime                  String?                @db.VarChar(64)
+  packageManager           String?                @map("package_manager") @db.VarChar(64)
+  startupKind              StartupKind            @default(UNKNOWN) @map("startup_kind")
+  executable               String                 @db.VarChar(255)
+  args                     String[]               @default([])
+  workingDirectory         String                 @default(".") @map("working_directory") @db.VarChar(1024)
+  targetUrl                String?                @map("target_url") @db.VarChar(2048)
+  environmentVariableNames String[]               @default([]) @map("environment_variable_names")
+  confidence               ArchitectureConfidence @default(LOW)
+  safety                   RunConfigSafety        @default(SAFE_STRUCTURE)
+  source                   RunConfigSource        @default(DETECTED)
+  status                   RunConfigStatus        @default(CONFIGURED)
+  isSelected               Boolean                @default(false) @map("is_selected")
+  evidenceJson             Json?                  @map("evidence_json")
+  createdAt                DateTime               @default(now()) @map("created_at")
+  updatedAt                DateTime               @updatedAt @map("updated_at")
+
+  projectSource ProjectSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId])
+  @@index([sourceId, isSelected])
+  @@map("project_run_configurations")
+}
+
+model RepositorySnapshot {
+  id              String         @id @default(uuid()) @db.Uuid
+  sourceId        String         @map("source_id") @db.Uuid
+  indexRunId      String?        @map("index_run_id") @db.Uuid
+  label           String?        @db.VarChar(255)
+  kind            SnapshotKind   @default(MANUAL_BASELINE)
+  status          SnapshotStatus @default(COMPLETE)
+  snapshotVersion Int            @default(1) @map("snapshot_version")
+  fingerprint     String         @db.VarChar(64)
+  fileCount       Int            @default(0) @map("file_count")
+  sourceFileCount Int            @default(0) @map("source_file_count")
+  testFileCount   Int            @default(0) @map("test_file_count")
+  gitHeadCommit   String?        @map("git_head_commit") @db.VarChar(64)
+  gitBranch       String?        @map("git_branch") @db.VarChar(255)
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  source                        ProjectSource                   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  indexRun                      RepositoryIndexRun?             @relation(fields: [indexRunId], references: [id], onDelete: SetNull)
+  files                         RepositorySnapshotFile[]
+  requirementRepositoryEvidence RequirementRepositoryEvidence[]
+
+  @@index([sourceId])
+  @@index([sourceId, createdAt])
+  @@map("repository_snapshots")
+}
+
+model RepositorySnapshotFile {
+  id             String   @id @default(uuid()) @db.Uuid
+  snapshotId     String   @map("snapshot_id") @db.Uuid
+  relativePath   String   @map("relative_path") @db.VarChar(1024)
+  contentHash    String?  @map("content_hash") @db.VarChar(64)
+  language       String?  @db.VarChar(64)
+  classification String   @db.VarChar(64)
+  sizeBytes      Int      @map("size_bytes")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  snapshot RepositorySnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@unique([snapshotId, relativePath])
+  @@index([snapshotId])
+  @@index([snapshotId, contentHash])
+  @@map("repository_snapshot_files")
+}
+
+model RequirementSource {
+  id          String                  @id @default(uuid()) @db.Uuid
+  projectId   String                  @map("project_id") @db.Uuid
+  name        String                  @db.VarChar(255)
+  sourceType  RequirementSourceType   @default(MANUAL) @map("source_type")
+  status      RequirementSourceStatus @default(ACTIVE)
+  description String?                 @db.Text
+  metadata    Json?                   @map("metadata")
+  createdAt   DateTime                @default(now()) @map("created_at")
+  updatedAt   DateTime                @updatedAt @map("updated_at")
+
+  project                Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirements           Requirement[]
+  document               RequirementDocument?
+  requirementProvenances RequirementProvenance[]
+
+  @@index([projectId])
+  @@index([projectId, status])
+  @@map("requirement_sources")
+}
+
+model Requirement {
+  id                  String              @id @default(uuid()) @db.Uuid
+  projectId           String              @map("project_id") @db.Uuid
+  requirementSourceId String?             @map("requirement_source_id") @db.Uuid
+  requirementKey      String              @map("requirement_key") @db.VarChar(64)
+  title               String              @db.VarChar(255)
+  originalText        String              @map("original_text") @db.Text
+  type                RequirementType     @default(UNKNOWN)
+  priority            RequirementPriority @default(UNSPECIFIED)
+  status              RequirementStatus   @default(DRAFT)
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+
+  project               Project                         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirementSource     RequirementSource?              @relation(fields: [requirementSourceId], references: [id], onDelete: SetNull)
+  importedCandidates    RequirementCandidate[]
+  provenance            RequirementProvenance?
+  representation        RequirementRepresentation?
+  metadata              RequirementMetadata?
+  qualityAnalysis       RequirementQualityAnalysis?
+  qualityFindings       RequirementQualityFinding[]
+  outgoingRelationships RequirementRelationship[]       @relation("SourceRequirement")
+  incomingRelationships RequirementRelationship[]       @relation("TargetRequirement")
+  repositoryEvidence    RequirementRepositoryEvidence[]
+  versions              RequirementVersion[]
+  impacts               RequirementChangeImpact[]       @relation("SourceRequirementImpacts")
+  targetedByImpacts     RequirementChangeImpact[]       @relation("TargetRequirementImpacts")
+  aiAnalyses            RequirementAiAnalysis[]
+  testDesigns           RequirementTestDesign[]
+  scenarioGenerations   RequirementScenarioGeneration[]
+  scenarioCandidates    RequirementScenarioCandidate[]
+  testCases             TestCase[]
+  testCaseValidations   TestCaseValidation[]
+  testTraces            RequirementTestTrace[]
+
+  @@unique([projectId, requirementKey])
+  @@index([projectId])
+  @@index([projectId, status])
+  @@index([projectId, type])
+  @@index([requirementSourceId])
+  @@map("requirements")
+}
+
+model RequirementDocument {
+  id                  String   @id @default(uuid()) @db.Uuid
+  projectId           String   @map("project_id") @db.Uuid
+  requirementSourceId String   @unique @map("requirement_source_id") @db.Uuid
+  originalFileName    String   @map("original_file_name") @db.VarChar(255)
+  storageKey          String   @map("storage_key") @db.VarChar(255)
+  fileExtension       String   @map("file_extension") @db.VarChar(16)
+  mimeType            String   @map("mime_type") @db.VarChar(128)
+  fileSize            Int      @map("file_size")
+  sha256              String   @db.VarChar(64)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  project           Project                        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirementSource RequirementSource              @relation(fields: [requirementSourceId], references: [id], onDelete: Cascade)
+  extraction        RequirementDocumentExtraction?
+  candidates        RequirementCandidate[]
+  provenances       RequirementProvenance[]
+
+  @@unique([projectId, sha256])
+  @@index([projectId])
+  @@map("requirement_documents")
+}
+
+model RequirementDocumentExtraction {
+  id                    String   @id @default(uuid()) @db.Uuid
+  projectId             String   @map("project_id") @db.Uuid
+  requirementDocumentId String   @unique @map("requirement_document_id") @db.Uuid
+  sourceSha256          String   @map("source_sha256") @db.VarChar(64)
+  extractorVersion      String   @map("extractor_version") @db.VarChar(32)
+  format                String   @db.VarChar(16)
+  plainText             String   @map("plain_text") @db.Text
+  characterCount        Int      @map("character_count")
+  lineCount             Int      @map("line_count")
+  pageCount             Int?     @map("page_count")
+  blockCount            Int      @map("block_count")
+  headingCount          Int      @map("heading_count")
+  sectionCount          Int      @map("section_count")
+  tableCount            Int      @map("table_count")
+  status                String   @default("COMPLETED") @db.VarChar(32)
+  warnings              Json     @default("[]") @map("warnings")
+  blocks                Json     @default("[]") @map("blocks")
+  pages                 Json     @default("[]") @map("pages")
+  headings              Json     @default("[]") @map("headings")
+  sections              Json     @default("[]") @map("sections")
+  tables                Json     @default("[]") @map("tables")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  project             Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirementDocument RequirementDocument     @relation(fields: [requirementDocumentId], references: [id], onDelete: Cascade)
+  candidates          RequirementCandidate[]
+  provenances         RequirementProvenance[]
+
+  @@index([projectId])
+  @@index([requirementDocumentId])
+  @@map("requirement_document_extractions")
+}
+
+model RequirementCandidate {
+  id                    String                @id @default(uuid()) @db.Uuid
+  projectId             String                @map("project_id") @db.Uuid
+  requirementDocumentId String                @map("requirement_document_id") @db.Uuid
+  extractionId          String                @map("extraction_id") @db.Uuid
+  sourceBlockId         String?               @map("source_block_id") @db.VarChar(64)
+  sourceTableId         String?               @map("source_table_id") @db.VarChar(64)
+  sourceRowIndex        Int?                  @map("source_row_index")
+  sourceText            String                @map("source_text") @db.Text
+  reviewedText          String?               @map("reviewed_text") @db.Text
+  externalKey           String?               @map("external_key") @db.VarChar(64)
+  sectionId             String?               @map("section_id") @db.VarChar(64)
+  sectionPath           String?               @map("section_path") @db.VarChar(512)
+  pageNumber            Int?                  @map("page_number")
+  lineStart             Int?                  @map("line_start")
+  lineEnd               Int?                  @map("line_end")
+  startOffset           Int?                  @map("start_offset")
+  endOffset             Int?                  @map("end_offset")
+  detectionMethod       String                @default("RULE_BASED") @map("detection_method") @db.VarChar(64)
+  detectionReasons      Json                  @default("[]") @map("detection_reasons")
+  detectionScore        Int                   @default(0) @map("detection_score")
+  warnings              Json                  @default("[]") @map("warnings")
+  reviewStatus          CandidateReviewStatus @default(PENDING) @map("review_status")
+  importedRequirementId String?               @map("imported_requirement_id") @db.Uuid
+  detectorVersion       String                @default("requirement-detector-v1") @map("detector_version") @db.VarChar(32)
+  sourceSha256          String                @map("source_sha256") @db.VarChar(64)
+  orderIndex            Int                   @default(0) @map("order_index")
+  createdAt             DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project             Project                       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirementDocument RequirementDocument           @relation(fields: [requirementDocumentId], references: [id], onDelete: Cascade)
+  extraction          RequirementDocumentExtraction @relation(fields: [extractionId], references: [id], onDelete: Cascade)
+  importedRequirement Requirement?                  @relation(fields: [importedRequirementId], references: [id], onDelete: SetNull)
+  provenances         RequirementProvenance[]
+
+  @@index([projectId])
+  @@index([requirementDocumentId])
+  @@index([extractionId])
+  @@index([projectId, reviewStatus])
+  @@index([importedRequirementId])
+  @@map("requirement_candidates")
+}
+
+model RequirementProvenance {
+  id                     String                 @id @default(uuid()) @db.Uuid
+  projectId              String                 @map("project_id") @db.Uuid
+  requirementId          String                 @unique @map("requirement_id") @db.Uuid
+  requirementSourceId    String                 @map("requirement_source_id") @db.Uuid
+  sourceKind             ProvenanceSourceKind   @map("source_kind")
+  locationKind           ProvenanceLocationKind @default(NONE) @map("location_kind")
+  candidateId            String?                @map("candidate_id") @db.Uuid
+  documentId             String?                @map("document_id") @db.Uuid
+  extractionId           String?                @map("extraction_id") @db.Uuid
+  sourceBlockId          String?                @map("source_block_id") @db.VarChar(64)
+  sourceTableId          String?                @map("source_table_id") @db.VarChar(64)
+  sourceRowIndex         Int?                   @map("source_row_index")
+  sectionId              String?                @map("section_id") @db.VarChar(64)
+  sectionPath            String?                @map("section_path") @db.VarChar(512)
+  pageNumber             Int?                   @map("page_number")
+  lineStart              Int?                   @map("line_start")
+  lineEnd                Int?                   @map("line_end")
+  startOffset            Int?                   @map("start_offset")
+  endOffset              Int?                   @map("end_offset")
+  sourceText             String?                @map("source_text") @db.Text
+  reviewedText           String?                @map("reviewed_text") @db.Text
+  externalRequirementKey String?                @map("external_requirement_key") @db.VarChar(64)
+  sourceSha256           String?                @map("source_sha256") @db.VarChar(64)
+  extractorVersion       String?                @map("extractor_version") @db.VarChar(32)
+  detectorVersion        String?                @map("detector_version") @db.VarChar(32)
+  detectionReasons       Json                   @default("[]") @map("detection_reasons")
+  detectionScore         Int?                   @map("detection_score")
+  completeness           ProvenanceCompleteness @default(MINIMAL) @map("completeness")
+  createdAt              DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project           Project                        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement       Requirement                    @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  requirementSource RequirementSource              @relation(fields: [requirementSourceId], references: [id], onDelete: Restrict)
+  candidate         RequirementCandidate?          @relation(fields: [candidateId], references: [id], onDelete: SetNull)
+  document          RequirementDocument?           @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  extraction        RequirementDocumentExtraction? @relation(fields: [extractionId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([requirementSourceId])
+  @@index([documentId])
+  @@index([candidateId])
+  @@map("requirement_provenances")
+}
+
+model ProjectRequirementSequence {
+  projectId String   @id @map("project_id") @db.Uuid
+  nextValue Int      @default(1) @map("next_value")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_requirement_sequences")
+}
+
+model RequirementRepresentation {
+  id                          String                     @id @default(uuid()) @db.Uuid
+  projectId                   String                     @map("project_id") @db.Uuid
+  requirementId               String                     @unique @map("requirement_id") @db.Uuid
+  normalizedText              String                     @map("normalized_text") @db.Text
+  actor                       String?                    @db.VarChar(255)
+  modality                    RequirementModality        @default(UNSPECIFIED)
+  negated                     Boolean                    @default(false)
+  action                      String?                    @db.VarChar(255)
+  object                      String?                    @db.Text
+  conditions                  Json                       @default("[]") @map("conditions")
+  constraints                 Json                       @default("[]") @map("constraints")
+  quantitativeValues          Json                       @default("[]") @map("quantitative_values")
+  expectedOutcome             String?                    @map("expected_outcome") @db.Text
+  sourceRequirementTextSha256 String                     @map("source_requirement_text_sha256") @db.VarChar(64)
+  normalizationStatus         NormalizationStatus        @default(NORMALIZED) @map("normalization_status")
+  normalizationMethod         NormalizationMethod        @default(DETERMINISTIC) @map("normalization_method")
+  normalizerVersion           String                     @default("requirement-normalizer-v1") @map("normalizer_version") @db.VarChar(32)
+  reviewStatus                RepresentationReviewStatus @default(GENERATED) @map("review_status")
+  warnings                    Json                       @default("[]") @map("warnings")
+  createdAt                   DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                   DateTime                   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([normalizationStatus])
+  @@map("requirement_representations")
+}
+
+model RequirementMetadata {
+  id                          String                     @id @default(uuid()) @db.Uuid
+  projectId                   String                     @map("project_id") @db.Uuid
+  requirementId               String                     @unique @map("requirement_id") @db.Uuid
+  category                    RequirementCategory        @default(UNKNOWN)
+  subCategory                 RequirementSubCategory?    @map("sub_category")
+  domain                      String?                    @db.VarChar(100)
+  module                      String?                    @db.VarChar(100)
+  businessCapability          String?                    @map("business_capability") @db.VarChar(255)
+  actors                      Json                       @default("[]") @map("actors")
+  securityRelevant            Boolean                    @default(false) @map("security_relevant")
+  performanceRelevant         Boolean                    @default(false) @map("performance_relevant")
+  complianceRelevant          Boolean                    @default(false) @map("compliance_relevant")
+  complianceStandards         Json                       @default("[]") @map("compliance_standards")
+  priority                    RequirementPriority        @default(UNSPECIFIED)
+  riskLevel                   RequirementRiskLevel       @default(UNSPECIFIED) @map("risk_level")
+  criticality                 RequirementCriticality     @default(UNSPECIFIED)
+  tags                        Json                       @default("[]") @map("tags")
+  classificationMethod        ClassificationMethod       @default(DETERMINISTIC) @map("classification_method")
+  classifierVersion           String                     @default("requirement-classifier-v1") @map("classifier_version") @db.VarChar(64)
+  reviewStatus                ClassificationReviewStatus @default(GENERATED) @map("review_status")
+  reasons                     Json                       @default("[]") @map("reasons")
+  sourceRequirementTextSha256 String                     @map("source_requirement_text_sha256") @db.VarChar(64)
+  createdAt                   DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                   DateTime                   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([category])
+  @@index([priority])
+  @@index([riskLevel])
+  @@map("requirement_metadata")
+}
+
+model RequirementQualityAnalysis {
+  id                          String                       @id @default(uuid()) @db.Uuid
+  projectId                   String                       @map("project_id") @db.Uuid
+  requirementId               String                       @unique @map("requirement_id") @db.Uuid
+  sourceRequirementTextSha256 String                       @map("source_requirement_text_sha256") @db.VarChar(64)
+  analyzerVersion             String                       @default("requirement-quality-analyzer-v1") @map("analyzer_version") @db.VarChar(64)
+  testabilityStatus           RequirementTestabilityStatus @map("testability_status")
+  qualityScore                Int?                         @map("quality_score")
+  analysisMethod              QualityAnalysisMethod        @default(DETERMINISTIC) @map("analysis_method")
+  findingsCount               Int                          @default(0) @map("findings_count")
+  openFindingsCount           Int                          @default(0) @map("open_findings_count")
+  clarificationQuestions      Json                         @default("[]") @map("clarification_questions")
+  createdAt                   DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                   DateTime                     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project     Project                     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement Requirement                 @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  findings    RequirementQualityFinding[]
+
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([testabilityStatus])
+  @@map("requirement_quality_analyses")
+}
+
+model RequirementQualityFinding {
+  id                     String                     @id @default(uuid()) @db.Uuid
+  analysisId             String                     @map("analysis_id") @db.Uuid
+  projectId              String                     @map("project_id") @db.Uuid
+  requirementId          String                     @map("requirement_id") @db.Uuid
+  code                   String                     @db.VarChar(64)
+  category               QualityFindingCategory
+  severity               QualityFindingSeverity
+  message                String                     @db.Text
+  evidenceText           String?                    @map("evidence_text") @db.Text
+  startOffset            Int?                       @map("start_offset")
+  endOffset              Int?                       @map("end_offset")
+  suggestedClarification String?                    @map("suggested_clarification") @db.Text
+  reviewStatus           QualityFindingReviewStatus @default(OPEN) @map("review_status")
+  reviewRationale        String?                    @map("review_rationale") @db.Text
+  clarificationResponse  String?                    @map("clarification_response") @db.Text
+  createdAt              DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime                   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  analysis    RequirementQualityAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  project     Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement Requirement                @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+
+  @@index([analysisId])
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([code])
+  @@index([reviewStatus])
+  @@index([severity])
+  @@map("requirement_quality_findings")
+}
+
+model RequirementRelationship {
+  id                          String                      @id @default(uuid()) @db.Uuid
+  projectId                   String                      @map("project_id") @db.Uuid
+  sourceRequirementId         String                      @map("source_requirement_id") @db.Uuid
+  targetRequirementId         String                      @map("target_requirement_id") @db.Uuid
+  relationshipType            RequirementRelationshipType @map("relationship_type")
+  detectionMethod             RelationshipDetectionMethod @default(DETERMINISTIC_RULE) @map("detection_method")
+  status                      RelationshipStatus          @default(PROPOSED)
+  reasonCodes                 Json                        @default("[]") @map("reason_codes")
+  evidence                    String?                     @db.Text
+  sourceRequirementTextSha256 String                      @map("source_requirement_text_sha256") @db.VarChar(64)
+  targetRequirementTextSha256 String                      @map("target_requirement_text_sha256") @db.VarChar(64)
+  analyzerVersion             String                      @default("requirement-relationship-analyzer-v1") @map("analyzer_version") @db.VarChar(64)
+  reviewRationale             String?                     @map("review_rationale") @db.Text
+  createdAt                   DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                   DateTime                    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project           Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceRequirement Requirement @relation("SourceRequirement", fields: [sourceRequirementId], references: [id], onDelete: Cascade)
+  targetRequirement Requirement @relation("TargetRequirement", fields: [targetRequirementId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceRequirementId, targetRequirementId, relationshipType])
+  @@index([projectId])
+  @@index([sourceRequirementId])
+  @@index([targetRequirementId])
+  @@index([relationshipType])
+  @@index([status])
+  @@map("requirement_relationships")
+}
+
+model RequirementRepositoryEvidence {
+  id                          String                   @id @default(uuid()) @db.Uuid
+  projectId                   String                   @map("project_id") @db.Uuid
+  requirementId               String                   @map("requirement_id") @db.Uuid
+  projectSourceId             String                   @map("project_source_id") @db.Uuid
+  repositorySnapshotId        String?                  @map("repository_snapshot_id") @db.Uuid
+  indexedFileId               String?                  @map("indexed_file_id") @db.Uuid
+  symbolId                    String?                  @map("symbol_id") @db.Uuid
+  evidenceType                RepositoryEvidenceType   @map("evidence_type")
+  filePath                    String                   @map("file_path") @db.VarChar(1024)
+  symbolName                  String?                  @map("symbol_name") @db.VarChar(255)
+  lineStart                   Int?                     @map("line_start")
+  lineEnd                     Int?                     @map("line_end")
+  fileContentHash             String?                  @map("file_content_hash") @db.VarChar(64)
+  evidenceScore               Int                      @default(0) @map("evidence_score")
+  reasonCodes                 Json                     @default("[]") @map("reason_codes")
+  matchMethod                 EvidenceMatchMethod      @default(EXACT_FILE_TOKEN) @map("match_method")
+  status                      RepositoryEvidenceStatus @default(CANDIDATE)
+  sourceRequirementTextSha256 String                   @map("source_requirement_text_sha256") @db.VarChar(64)
+  matcherVersion              String                   @default("requirement-repository-matcher-v1") @map("matcher_version") @db.VarChar(64)
+  reviewRationale             String?                  @map("review_rationale") @db.Text
+  createdAt                   DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                   DateTime                 @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project            Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement        Requirement               @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  projectSource      ProjectSource             @relation(fields: [projectSourceId], references: [id], onDelete: Cascade)
+  repositorySnapshot RepositorySnapshot?       @relation(fields: [repositorySnapshotId], references: [id], onDelete: SetNull)
+  indexedFile        RepositoryFile?           @relation(fields: [indexedFileId], references: [id], onDelete: SetNull)
+  symbol             RepositorySymbol?         @relation(fields: [symbolId], references: [id], onDelete: SetNull)
+  changeImpacts      RequirementChangeImpact[]
+
+  @@unique([requirementId, projectSourceId, filePath, evidenceType, symbolName])
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([projectSourceId])
+  @@index([repositorySnapshotId])
+  @@index([indexedFileId])
+  @@index([status])
+  @@index([evidenceType])
+  @@map("requirement_repository_evidence")
+}
+
+model RequirementVersion {
+  id                          String                @id @default(uuid()) @db.Uuid
+  projectId                   String                @map("project_id") @db.Uuid
+  requirementId               String                @map("requirement_id") @db.Uuid
+  versionNumber               Int                   @map("version_number")
+  requirementKeySnapshot      String                @map("requirement_key_snapshot") @db.VarChar(64)
+  title                       String                @db.VarChar(255)
+  originalText                String                @map("original_text") @db.Text
+  type                        RequirementType       @default(UNKNOWN)
+  priority                    RequirementPriority   @default(UNSPECIFIED)
+  status                      RequirementStatus     @default(DRAFT)
+  sourceRequirementTextSha256 String                @map("source_requirement_text_sha256") @db.VarChar(64)
+  changeKind                  RequirementChangeKind @default(CREATED) @map("change_kind")
+  changeReason                String?               @map("change_reason") @db.Text
+  changedFields               Json                  @default("[]") @map("changed_fields")
+  createdByActorId            String?               @map("created_by_actor_id") @db.VarChar(255)
+  createdAt                   DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  project             Project                         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement         Requirement                     @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  changeImpacts       RequirementChangeImpact[]
+  aiAnalyses          RequirementAiAnalysis[]
+  testDesigns         RequirementTestDesign[]
+  scenarioGenerations RequirementScenarioGeneration[]
+  testCases           TestCase[]
+  testTraces          RequirementTestTrace[]
+
+  @@unique([requirementId, versionNumber])
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([requirementId, versionNumber])
+  @@index([changeKind])
+  @@index([createdAt])
+  @@map("requirement_versions")
+}
+
+model RequirementChangeImpact {
+  id                   String                  @id @default(uuid()) @db.Uuid
+  projectId            String                  @map("project_id") @db.Uuid
+  requirementId        String                  @map("requirement_id") @db.Uuid
+  requirementVersionId String                  @map("requirement_version_id") @db.Uuid
+  impactType           RequirementImpactType   @map("impact_type")
+  targetRequirementId  String?                 @map("target_requirement_id") @db.Uuid
+  repositoryEvidenceId String?                 @map("repository_evidence_id") @db.Uuid
+  projectSourceId      String?                 @map("project_source_id") @db.Uuid
+  indexedFileId        String?                 @map("indexed_file_id") @db.Uuid
+  symbolId             String?                 @map("symbol_id") @db.Uuid
+  reasonCode           String                  @map("reason_code") @db.VarChar(64)
+  status               RequirementImpactStatus @default(OPEN)
+  reviewRationale      String?                 @map("review_rationale") @db.Text
+  depth                Int                     @default(1)
+  createdAt            DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  reviewedAt           DateTime?               @map("reviewed_at") @db.Timestamptz(6)
+
+  project            Project                        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement        Requirement                    @relation("SourceRequirementImpacts", fields: [requirementId], references: [id], onDelete: Cascade)
+  requirementVersion RequirementVersion             @relation(fields: [requirementVersionId], references: [id], onDelete: Cascade)
+  targetRequirement  Requirement?                   @relation("TargetRequirementImpacts", fields: [targetRequirementId], references: [id], onDelete: Cascade)
+  repositoryEvidence RequirementRepositoryEvidence? @relation(fields: [repositoryEvidenceId], references: [id], onDelete: Cascade)
+
+  @@unique([requirementVersionId, impactType, targetRequirementId, repositoryEvidenceId])
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([requirementVersionId])
+  @@index([targetRequirementId])
+  @@index([status])
+  @@index([impactType])
+  @@map("requirement_change_impacts")
+}
+
+model VectorEmbedding {
+  id                      String                       @id @default(uuid()) @db.Uuid
+  projectId               String                       @map("project_id") @db.Uuid
+  subjectType             VectorSubjectType            @map("subject_type")
+  subjectId               String                       @map("subject_id") @db.Uuid
+  sourceVersionId         String?                      @map("source_version_id") @db.Uuid
+  providerId              String                       @map("provider_id") @db.VarChar(64)
+  model                   String                       @db.VarChar(128)
+  dimensions              Int
+  canonicalizationVersion Int                          @map("canonicalization_version")
+  inputSha256             String                       @map("input_sha256") @db.VarChar(64)
+  vector                  Unsupported("vector(1536)")?
+  status                  VectorEmbeddingStatus        @default(CURRENT)
+  metadata                Json                         @default("{}") @map("metadata")
+  createdAt               DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime                     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  staleAt                 DateTime?                    @map("stale_at") @db.Timestamptz(6)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, status])
+  @@index([projectId, subjectType, subjectId])
+  @@index([projectId, subjectType, status])
+  @@index([projectId, inputSha256])
+  @@map("vector_embeddings")
+}
+
+model RequirementAiAnalysis {
+  id                       String           @id @default(uuid()) @db.Uuid
+  projectId                String           @map("project_id") @db.Uuid
+  requirementId            String           @map("requirement_id") @db.Uuid
+  requirementVersionId     String?          @map("requirement_version_id") @db.Uuid
+  requirementVersionNumber Int              @map("requirement_version_number")
+  status                   AiAnalysisStatus @default(CURRENT)
+  providerId               String           @map("provider_id") @db.VarChar(64)
+  model                    String           @db.VarChar(128)
+  promptId                 String           @map("prompt_id") @db.VarChar(64)
+  promptVersion            Int              @map("prompt_version")
+  schemaVersion            Int              @default(1) @map("schema_version")
+  inputSha256              String           @map("input_sha256") @db.VarChar(64)
+  contextSha256            String           @map("context_sha256") @db.VarChar(64)
+  structuredAnalysisJson   Json             @map("structured_analysis_json")
+  groundingSummaryJson     Json             @default("{}") @map("grounding_summary_json")
+  usageJson                Json             @default("{}") @map("usage_json")
+  durationMs               Int              @default(0) @map("duration_ms")
+  errorMessage             String?          @map("error_message") @db.Text
+  createdAt                DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  staleAt                  DateTime?        @map("stale_at") @db.Timestamptz(6)
+
+  project            Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement        Requirement         @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  requirementVersion RequirementVersion? @relation(fields: [requirementVersionId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([requirementId, status])
+  @@index([requirementId, requirementVersionNumber])
+  @@index([projectId, inputSha256, contextSha256])
+  @@map("requirement_ai_analyses")
+}
+
+model RequirementTestDesign {
+  id                       String                  @id @default(uuid()) @db.Uuid
+  projectId                String                  @map("project_id") @db.Uuid
+  requirementId            String                  @map("requirement_id") @db.Uuid
+  requirementVersionId     String?                 @map("requirement_version_id") @db.Uuid
+  requirementVersionNumber Int                     @map("requirement_version_number")
+  status                   TestDesignStatus        @default(CURRENT)
+  applicability            TestDesignApplicability @default(APPLICABLE)
+  automationSuitability    AutomationSuitability   @default(UNKNOWN) @map("automation_suitability")
+  inputFingerprint         String                  @map("input_fingerprint") @db.VarChar(64)
+  engineVersion            String                  @map("engine_version") @db.VarChar(64)
+  promptTemplateVersion    Int?                    @map("prompt_template_version")
+  providerId               String                  @map("provider_id") @db.VarChar(64)
+  model                    String                  @db.VarChar(128)
+  structuredDesignJson     Json                    @map("structured_design_json")
+  usageJson                Json                    @default("{}") @map("usage_json")
+  durationMs               Int                     @default(0) @map("duration_ms")
+  errorMessage             String?                 @map("error_message") @db.Text
+  createdAt                DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  staleAt                  DateTime?               @map("stale_at") @db.Timestamptz(6)
+
+  project            Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement        Requirement         @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  requirementVersion RequirementVersion? @relation(fields: [requirementVersionId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([requirementId, status])
+  @@index([requirementId, requirementVersionNumber])
+  @@index([projectId, inputFingerprint])
+  @@map("requirement_test_designs")
+}
+
+model RequirementScenarioGeneration {
+  id                       String                   @id @default(uuid()) @db.Uuid
+  projectId                String                   @map("project_id") @db.Uuid
+  requirementId            String                   @map("requirement_id") @db.Uuid
+  requirementVersionId     String?                  @map("requirement_version_id") @db.Uuid
+  requirementVersionNumber Int                      @map("requirement_version_number")
+  status                   ScenarioGenerationStatus @default(GENERATED)
+  inputFingerprint         String                   @map("input_fingerprint") @db.VarChar(64)
+  providerId               String                   @map("provider_id") @db.VarChar(64)
+  model                    String                   @db.VarChar(128)
+  promptId                 String                   @map("prompt_id") @db.VarChar(64)
+  promptVersion            Int                      @map("prompt_version")
+  scenarioCount            Int                      @default(0) @map("scenario_count")
+  warningsJson             Json                     @default("[]") @map("warnings_json")
+  usageJson                Json                     @default("{}") @map("usage_json")
+  durationMs               Int                      @default(0) @map("duration_ms")
+  errorMessage             String?                  @map("error_message") @db.Text
+  createdAt                DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime                 @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  staleAt                  DateTime?                @map("stale_at") @db.Timestamptz(6)
+
+  project            Project                        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement        Requirement                    @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  requirementVersion RequirementVersion?            @relation(fields: [requirementVersionId], references: [id], onDelete: SetNull)
+  candidates         RequirementScenarioCandidate[]
+
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([requirementId, status])
+  @@index([requirementId, requirementVersionNumber])
+  @@index([projectId, inputFingerprint])
+  @@map("requirement_scenario_generations")
+}
+
+model RequirementScenarioCandidate {
+  id                     String   @id @default(uuid()) @db.Uuid
+  generationId           String   @map("generation_id") @db.Uuid
+  projectId              String   @map("project_id") @db.Uuid
+  requirementId          String   @map("requirement_id") @db.Uuid
+  ordinal                Int
+  scenarioKey            String?  @map("scenario_key") @db.VarChar(64)
+  title                  String   @db.VarChar(255)
+  objective              String   @db.Text
+  rationale              String   @db.Text
+  requirementAspect      String   @map("requirement_aspect") @db.Text
+  testLevel              String?  @map("test_level") @db.VarChar(64)
+  testIntent             String?  @map("test_intent") @db.VarChar(64)
+  applicability          String?  @db.VarChar(64)
+  assumptionsJson        Json     @default("[]") @map("assumptions_json")
+  sourceEvidenceRefsJson Json     @default("[]") @map("source_evidence_refs_json")
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  generation  RequirementScenarioGeneration @relation(fields: [generationId], references: [id], onDelete: Cascade)
+  project     Project                       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement Requirement                   @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  testCases   TestCase[]
+  testTraces  RequirementTestTrace[]
+
+  @@index([generationId])
+  @@index([projectId])
+  @@index([requirementId])
+  @@map("requirement_scenario_candidates")
+}
+
+model ProjectTestCaseSequence {
+  projectId String   @id @map("project_id") @db.Uuid
+  nextValue Int      @default(1) @map("next_value")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_test_case_sequences")
+}
+
+model TestCase {
+  id                             String                       @id @default(uuid()) @db.Uuid
+  projectId                      String                       @map("project_id") @db.Uuid
+  testCaseKey                    String                       @map("test_case_key") @db.VarChar(64)
+  title                          String                       @db.VarChar(255)
+  objective                      String                       @db.Text
+  description                    String?                      @db.Text
+  type                           TestCaseType                 @default(POSITIVE)
+  priority                       TestCasePriority             @default(MEDIUM)
+  status                         TestCaseStatus               @default(GENERATED)
+  currentVersionNumber           Int                          @default(1) @map("current_version_number")
+  reviewStatus                   TestReviewStatus             @default(DRAFT) @map("review_status")
+  approvedVersionNumber          Int?                         @map("approved_version_number")
+  approvedAt                     DateTime?                    @map("approved_at") @db.Timestamptz(6)
+  approvedByActorId              String?                      @map("approved_by_actor_id") @db.VarChar(255)
+  latestRejectionReason          TestCaseRejectionReason?     @map("latest_rejection_reason")
+  latestReviewComment            String?                      @map("latest_review_comment") @db.Text
+  executionSuitability           TestCaseExecutionSuitability @default(UNKNOWN) @map("execution_suitability")
+  sourceRequirementId            String?                      @map("source_requirement_id") @db.Uuid
+  sourceRequirementKey           String?                      @map("source_requirement_key") @db.VarChar(64)
+  sourceRequirementVersionId     String?                      @map("source_requirement_version_id") @db.Uuid
+  sourceRequirementVersionNumber Int?                         @map("source_requirement_version_number")
+  sourceScenarioCandidateId      String?                      @map("source_scenario_candidate_id") @db.Uuid
+  sourceScenarioKey              String?                      @map("source_scenario_key") @db.VarChar(64)
+  generationId                   String?                      @map("generation_id") @db.Uuid
+  inputFingerprint               String?                      @map("input_fingerprint") @db.VarChar(64)
+  providerId                     String?                      @map("provider_id") @db.VarChar(64)
+  model                          String?                      @db.VarChar(128)
+  promptId                       String?                      @map("prompt_id") @db.VarChar(64)
+  promptVersion                  Int?                         @map("prompt_version")
+  overallExpectedResult          String?                      @map("overall_expected_result") @db.Text
+  assumptions                    Json                         @default("[]") @map("assumptions")
+  unknowns                       Json                         @default("[]") @map("unknowns")
+  tags                           String[]                     @default([])
+  createdAt                      DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                      DateTime                     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project                  Project                       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceRequirement        Requirement?                  @relation(fields: [sourceRequirementId], references: [id], onDelete: SetNull)
+  sourceRequirementVersion RequirementVersion?           @relation(fields: [sourceRequirementVersionId], references: [id], onDelete: SetNull)
+  sourceScenarioCandidate  RequirementScenarioCandidate? @relation(fields: [sourceScenarioCandidateId], references: [id], onDelete: SetNull)
+  preconditions            TestCasePrecondition[]
+  steps                    TestCaseStep[]
+  testData                 TestCaseTestDataItem[]
+  validations              TestCaseValidation[]
+  requirementTraces        RequirementTestTrace[]
+  versions                 TestCaseVersion[]
+  reviewEvents             TestCaseReviewEvent[]
+
+  @@unique([projectId, testCaseKey])
+  @@index([projectId])
+  @@index([projectId, status])
+  @@index([projectId, reviewStatus])
+  @@index([projectId, type])
+  @@index([sourceRequirementId])
+  @@index([sourceRequirementId, sourceRequirementVersionNumber])
+  @@index([projectId, inputFingerprint])
+  @@map("test_cases")
+}
+
+model TestCasePrecondition {
+  id                     String               @id @default(uuid()) @db.Uuid
+  testCaseId             String               @map("test_case_id") @db.Uuid
+  sequenceOrder          Int                  @map("sequence_order")
+  category               PreconditionCategory @default(OTHER)
+  description            String               @db.Text
+  isEnforced             Boolean              @default(true) @map("is_enforced")
+  confidence             String               @default("HIGH") @db.VarChar(32)
+  sourceEvidenceRefsJson Json                 @default("[]") @map("source_evidence_refs_json")
+  reviewRequired         Boolean              @default(false) @map("review_required")
+  createdAt              DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  testCase TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@unique([testCaseId, sequenceOrder])
+  @@index([testCaseId])
+  @@map("test_case_preconditions")
+}
+
+model TestCaseStep {
+  id              String   @id @default(uuid()) @db.Uuid
+  testCaseId      String   @map("test_case_id") @db.Uuid
+  stepNumber      Int      @map("step_number")
+  action          String   @db.Text
+  expectedResult  String?  @map("expected_result") @db.Text
+  testDataSummary String?  @map("test_data_summary") @db.Text
+  stateChangeFrom String?  @map("state_change_from") @db.VarChar(255)
+  stateChangeTo   String?  @map("state_change_to") @db.VarChar(255)
+  stateEntity     String?  @map("state_entity") @db.VarChar(255)
+  isOptional      Boolean  @default(false) @map("is_optional")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  testCase TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@unique([testCaseId, stepNumber])
+  @@index([testCaseId])
+  @@map("test_case_steps")
+}
+
+model TestCaseTestDataItem {
+  id                     String   @id @default(uuid()) @db.Uuid
+  testCaseId             String   @map("test_case_id") @db.Uuid
+  sequenceOrder          Int      @default(0) @map("sequence_order")
+  name                   String   @db.VarChar(256)
+  dataType               String   @default("STRING") @map("data_type") @db.VarChar(64)
+  origin                 String   @default("DERIVED") @db.VarChar(64)
+  valueJson              Json?    @map("value_json")
+  generator              String?  @db.VarChar(512)
+  constraint             String?  @db.Text
+  isSensitive            Boolean  @default(false) @map("is_sensitive")
+  unknownReason          String?  @map("unknown_reason") @db.Text
+  confidence             String   @default("HIGH") @db.VarChar(32)
+  sourceEvidenceRefsJson Json     @default("[]") @map("source_evidence_refs_json")
+  reviewRequired         Boolean  @default(false) @map("review_required")
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  testCase TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@index([testCaseId])
+  @@map("test_case_test_data_items")
+}
+
+model TestCaseValidation {
+  id                       String               @id @default(uuid()) @db.Uuid
+  projectId                String               @map("project_id") @db.Uuid
+  testCaseId               String?              @map("test_case_id") @db.Uuid
+  requirementId            String               @map("requirement_id") @db.Uuid
+  requirementVersionNumber Int?                 @map("requirement_version_number")
+  validatorVersion         String               @default("test-validation-v1") @map("validator_version") @db.VarChar(64)
+  status                   TestValidationStatus @default(VALID)
+  isStale                  Boolean              @default(false) @map("is_stale")
+  staleReason              String?              @map("stale_reason") @db.Text
+  testContentHash          String               @map("test_content_hash") @db.VarChar(64)
+  requirementContentHash   String?              @map("requirement_content_hash") @db.VarChar(64)
+  summary                  String?              @db.Text
+  metricsJson              Json                 @default("{}") @map("metrics_json")
+  provenanceJson           Json                 @default("{}") @map("provenance_json")
+  createdAt                DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project     Project                     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testCase    TestCase?                   @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  requirement Requirement                 @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  findings    TestCaseValidationFinding[]
+
+  @@index([projectId])
+  @@index([testCaseId])
+  @@index([requirementId])
+  @@index([projectId, status])
+  @@index([projectId, isStale])
+  @@map("test_case_validations")
+}
+
+model TestCaseValidationFinding {
+  id              String                 @id @default(uuid()) @db.Uuid
+  validationId    String                 @map("validation_id") @db.Uuid
+  code            String                 @db.VarChar(64)
+  severity        TestValidationSeverity @default(WARNING)
+  fieldPath       String?                @map("field_path") @db.VarChar(255)
+  message         String                 @db.Text
+  evidence        String?                @db.Text
+  source          String?                @db.VarChar(64)
+  suggestedAction String?                @map("suggested_action") @db.Text
+  createdAt       DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  validation TestCaseValidation @relation(fields: [validationId], references: [id], onDelete: Cascade)
+
+  @@index([validationId])
+  @@index([validationId, severity])
+  @@index([code])
+  @@map("test_case_validation_findings")
+}
+
+model RequirementTestTrace {
+  id                       String                        @id @default(uuid()) @db.Uuid
+  projectId                String                        @map("project_id") @db.Uuid
+  requirementId            String                        @map("requirement_id") @db.Uuid
+  requirementVersionId     String?                       @map("requirement_version_id") @db.Uuid
+  requirementVersionNumber Int                           @map("requirement_version_number")
+  testCaseId               String                        @map("test_case_id") @db.Uuid
+  scenarioCandidateId      String?                       @map("scenario_candidate_id") @db.Uuid
+  scenarioKey              String?                       @map("scenario_key") @db.VarChar(64)
+  generationRunId          String?                       @map("generation_run_id") @db.Uuid
+  origin                   TraceOrigin                   @default(GENERATED)
+  status                   TraceStatus                   @default(CURRENT)
+  staleReason              String?                       @map("stale_reason") @db.VarChar(255)
+  provenanceJson           Json                          @default("{}") @map("provenance_json")
+  createdAt                DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime                      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project            Project                       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement        Requirement                   @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  requirementVersion RequirementVersion?           @relation(fields: [requirementVersionId], references: [id], onDelete: SetNull)
+  testCase           TestCase                      @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  scenarioCandidate  RequirementScenarioCandidate? @relation(fields: [scenarioCandidateId], references: [id], onDelete: SetNull)
+
+  @@unique([requirementId, testCaseId])
+  @@index([projectId])
+  @@index([requirementId])
+  @@index([testCaseId])
+  @@index([status])
+  @@index([projectId, status])
+  @@map("requirement_test_traces")
+}
+
+model TestCaseVersion {
+  id                             String                       @id @default(uuid()) @db.Uuid
+  projectId                      String                       @map("project_id") @db.Uuid
+  testCaseId                     String                       @map("test_case_id") @db.Uuid
+  versionNumber                  Int                          @map("version_number")
+  sourceType                     TestCaseVersionSource        @default(INITIAL_AI_GENERATION) @map("source_type")
+  title                          String                       @db.VarChar(255)
+  objective                      String                       @db.Text
+  description                    String?                      @db.Text
+  type                           TestCaseType                 @default(POSITIVE)
+  priority                       TestCasePriority             @default(MEDIUM)
+  executionSuitability           TestCaseExecutionSuitability @default(UNKNOWN) @map("execution_suitability")
+  reviewStatus                   TestReviewStatus             @default(DRAFT) @map("review_status")
+  changeReason                   String?                      @map("change_reason") @db.Text
+  changedFields                  Json                         @default("[]") @map("changed_fields")
+  sourceRequirementId            String?                      @map("source_requirement_id") @db.Uuid
+  sourceRequirementKey           String?                      @map("source_requirement_key") @db.VarChar(64)
+  sourceRequirementVersionNumber Int?                         @map("source_requirement_version_number")
+  sourceScenarioCandidateId      String?                      @map("source_scenario_candidate_id") @db.Uuid
+  sourceScenarioKey              String?                      @map("source_scenario_key") @db.VarChar(64)
+  generationMetadata             Json                         @default("{}") @map("generation_metadata")
+  preconditionsJson              Json                         @default("[]") @map("preconditions_json")
+  stepsJson                      Json                         @default("[]") @map("steps_json")
+  testDataJson                   Json                         @default("[]") @map("test_data_json")
+  assumptionsJson                Json                         @default("[]") @map("assumptions_json")
+  unknownsJson                   Json                         @default("[]") @map("unknowns_json")
+  overallExpectedResult          String?                      @map("overall_expected_result") @db.Text
+  createdByActorId               String?                      @map("created_by_actor_id") @db.VarChar(255)
+  createdAt                      DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testCase TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@unique([testCaseId, versionNumber])
+  @@index([projectId])
+  @@index([testCaseId])
+  @@index([testCaseId, versionNumber])
+  @@index([reviewStatus])
+  @@index([createdAt])
+  @@map("test_case_versions")
+}
+
+model TestCaseReviewEvent {
+  id              String                   @id @default(uuid()) @db.Uuid
+  projectId       String                   @map("project_id") @db.Uuid
+  testCaseId      String                   @map("test_case_id") @db.Uuid
+  versionNumber   Int                      @map("version_number")
+  action          TestReviewAction
+  fromStatus      TestReviewStatus         @map("from_status")
+  toStatus        TestReviewStatus         @map("to_status")
+  rejectionReason TestCaseRejectionReason? @map("rejection_reason")
+  comment         String?                  @db.Text
+  actorId         String?                  @map("actor_id") @db.VarChar(255)
+  metadataJson    Json                     @default("{}") @map("metadata_json")
+  createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testCase TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([testCaseId])
+  @@index([testCaseId, versionNumber])
+  @@index([createdAt])
+  @@map("test_case_review_events")
+}
+
+
+
+
