@@ -61,7 +61,7 @@ async function runFixture() {
       vectorSearchService: vectorSearch,
       logger,
     });
-    const analysisService = new RequirementAnalysisService({
+    const _analysisService = new RequirementAnalysisService({
       prisma,
       retrievalService: ragService,
       promptExecutionService: promptExec,
@@ -75,7 +75,7 @@ async function runFixture() {
       rulesEngine: testDesignRules,
       logger,
     });
-    const scenarioService = new ScenarioGenerationService({
+    const _scenarioService = new ScenarioGenerationService({
       prisma,
       promptExecutionService: promptExec,
       retrievalService: ragService,
@@ -83,7 +83,7 @@ async function runFixture() {
       logger,
     });
     const testCaseService = new TestCaseService(prisma);
-    const validationService = new TestGenerationValidationService(prisma);
+    const _validationService = new TestGenerationValidationService(prisma);
     const traceService = new RequirementTestTraceService(prisma);
     const covService = new CoverageAnalysisService(prisma);
     const reviewService = new TestReviewService({ prisma, logger });
@@ -172,7 +172,7 @@ async function runFixture() {
     });
 
     // Req 4: Admin Audit Logging (Deliberately Uncovered for Fixture)
-    const req4 = await prisma.requirement.create({
+    const _req4 = await prisma.requirement.create({
       data: {
         projectId,
         requirementKey: 'REQ-CERT-004',
