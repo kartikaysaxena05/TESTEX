@@ -50,12 +50,38 @@ async function runFixture() {
 
     const promptExec = new AiPromptExecutionService({ gateway, logger });
     const vectorRepo = new VectorEmbeddingRepository(prisma);
-    const vectorSearch = new VectorSearchService({ prisma, gateway, repository: vectorRepo, logger });
-    const ragService = new RequirementContextRetrievalService({ prisma, vectorSearchService: vectorSearch, logger });
-    const analysisService = new RequirementAnalysisService({ prisma, retrievalService: ragService, promptExecutionService: promptExec, logger });
+    const vectorSearch = new VectorSearchService({
+      prisma,
+      gateway,
+      repository: vectorRepo,
+      logger,
+    });
+    const ragService = new RequirementContextRetrievalService({
+      prisma,
+      vectorSearchService: vectorSearch,
+      logger,
+    });
+    const analysisService = new RequirementAnalysisService({
+      prisma,
+      retrievalService: ragService,
+      promptExecutionService: promptExec,
+      logger,
+    });
     const testDesignRules = new DeterministicRulesEngine();
-    const testDesignService = new TestDesignService({ prisma, promptExecutionService: promptExec, retrievalService: ragService, rulesEngine: testDesignRules, logger });
-    const scenarioService = new ScenarioGenerationService({ prisma, promptExecutionService: promptExec, retrievalService: ragService, testDesignService, logger });
+    const testDesignService = new TestDesignService({
+      prisma,
+      promptExecutionService: promptExec,
+      retrievalService: ragService,
+      rulesEngine: testDesignRules,
+      logger,
+    });
+    const scenarioService = new ScenarioGenerationService({
+      prisma,
+      promptExecutionService: promptExec,
+      retrievalService: ragService,
+      testDesignService,
+      logger,
+    });
     const testCaseService = new TestCaseService(prisma);
     const validationService = new TestGenerationValidationService(prisma);
     const traceService = new RequirementTestTraceService(prisma);
@@ -79,7 +105,8 @@ async function runFixture() {
         projectId,
         requirementKey: 'REQ-CERT-001',
         title: 'User Authentication & Lockout Policy',
-        originalText: 'Users must authenticate with valid email and password. Account locks after 5 consecutive failed attempts for 15 minutes.',
+        originalText:
+          'Users must authenticate with valid email and password. Account locks after 5 consecutive failed attempts for 15 minutes.',
         status: 'ACTIVE',
         type: 'FUNCTIONAL',
         versions: {
@@ -88,7 +115,8 @@ async function runFixture() {
             versionNumber: 1,
             requirementKeySnapshot: 'REQ-CERT-001',
             title: 'User Authentication & Lockout Policy',
-            originalText: 'Users must authenticate with valid email and password. Account locks after 5 consecutive failed attempts for 15 minutes.',
+            originalText:
+              'Users must authenticate with valid email and password. Account locks after 5 consecutive failed attempts for 15 minutes.',
             sourceRequirementTextSha256: 'sha256-cert-req-1',
           },
         },
@@ -101,7 +129,8 @@ async function runFixture() {
         projectId,
         requirementKey: 'REQ-CERT-002',
         title: 'Credit Card Payment Gateway Processing',
-        originalText: 'Orders must process through PCI-compliant credit card gateway. Order amounts between $1.00 and $10,000.00 inclusive.',
+        originalText:
+          'Orders must process through PCI-compliant credit card gateway. Order amounts between $1.00 and $10,000.00 inclusive.',
         status: 'ACTIVE',
         type: 'FUNCTIONAL',
         versions: {
@@ -110,7 +139,8 @@ async function runFixture() {
             versionNumber: 1,
             requirementKeySnapshot: 'REQ-CERT-002',
             title: 'Credit Card Payment Gateway Processing',
-            originalText: 'Orders must process through PCI-compliant credit card gateway. Order amounts between $1.00 and $10,000.00 inclusive.',
+            originalText:
+              'Orders must process through PCI-compliant credit card gateway. Order amounts between $1.00 and $10,000.00 inclusive.',
             sourceRequirementTextSha256: 'sha256-cert-req-2',
           },
         },
@@ -123,7 +153,8 @@ async function runFixture() {
         projectId,
         requirementKey: 'REQ-CERT-003',
         title: 'User Profile Name and Avatar Update',
-        originalText: 'Users can update display name (1-50 chars) and avatar image (PNG/JPEG under 2MB).',
+        originalText:
+          'Users can update display name (1-50 chars) and avatar image (PNG/JPEG under 2MB).',
         status: 'ACTIVE',
         type: 'FUNCTIONAL',
         versions: {
@@ -132,7 +163,8 @@ async function runFixture() {
             versionNumber: 1,
             requirementKeySnapshot: 'REQ-CERT-003',
             title: 'User Profile Name and Avatar Update',
-            originalText: 'Users can update display name (1-50 chars) and avatar image (PNG/JPEG under 2MB).',
+            originalText:
+              'Users can update display name (1-50 chars) and avatar image (PNG/JPEG under 2MB).',
             sourceRequirementTextSha256: 'sha256-cert-req-3',
           },
         },
@@ -145,7 +177,8 @@ async function runFixture() {
         projectId,
         requirementKey: 'REQ-CERT-004',
         title: 'Administrative Security Audit Logging',
-        originalText: 'All administrative privilege elevations and policy changes must emit immutable audit log entries.',
+        originalText:
+          'All administrative privilege elevations and policy changes must emit immutable audit log entries.',
         status: 'ACTIVE',
         type: 'SECURITY',
         versions: {
@@ -154,7 +187,8 @@ async function runFixture() {
             versionNumber: 1,
             requirementKeySnapshot: 'REQ-CERT-004',
             title: 'Administrative Security Audit Logging',
-            originalText: 'All administrative privilege elevations and policy changes must emit immutable audit log entries.',
+            originalText:
+              'All administrative privilege elevations and policy changes must emit immutable audit log entries.',
             sourceRequirementTextSha256: 'sha256-cert-req-4',
           },
         },
@@ -285,10 +319,20 @@ async function runFixture() {
       sourceRequirementVersionNumber: 1,
       scenarioCandidateId: sc1.id,
       preconditions: [
-        { sequenceOrder: 1, category: 'AUTHENTICATION', description: 'User active in database.', isEnforced: true },
+        {
+          sequenceOrder: 1,
+          category: 'AUTHENTICATION',
+          description: 'User active in database.',
+          isEnforced: true,
+        },
       ],
       steps: [
-        { stepNumber: 1, action: 'Submit valid email and password', expectedResult: 'Login successful, redirect to dashboard', isOptional: false },
+        {
+          stepNumber: 1,
+          action: 'Submit valid email and password',
+          expectedResult: 'Login successful, redirect to dashboard',
+          isOptional: false,
+        },
       ],
       testData: [
         { sequenceOrder: 1, name: 'email', dataType: 'STRING', valueJson: 'alice@example.com' },
@@ -309,14 +353,22 @@ async function runFixture() {
       sourceRequirementVersionNumber: 1,
       scenarioCandidateId: sc2.id,
       preconditions: [
-        { sequenceOrder: 1, category: 'AUTHENTICATION', description: 'User account not locked initially.', isEnforced: true },
+        {
+          sequenceOrder: 1,
+          category: 'AUTHENTICATION',
+          description: 'User account not locked initially.',
+          isEnforced: true,
+        },
       ],
       steps: [
-        { stepNumber: 1, action: 'Submit incorrect password 5 times', expectedResult: 'Account locked message displayed', isOptional: false },
+        {
+          stepNumber: 1,
+          action: 'Submit incorrect password 5 times',
+          expectedResult: 'Account locked message displayed',
+          isOptional: false,
+        },
       ],
-      testData: [
-        { sequenceOrder: 1, name: 'attempts', dataType: 'NUMBER', valueJson: '5' },
-      ],
+      testData: [{ sequenceOrder: 1, name: 'attempts', dataType: 'NUMBER', valueJson: '5' }],
     });
 
     // Test Case 3 for Req 2 (Positive - Payment)
@@ -332,7 +384,12 @@ async function runFixture() {
       sourceRequirementVersionNumber: 1,
       scenarioCandidateId: sc3.id,
       steps: [
-        { stepNumber: 1, action: 'Submit valid test card for $49.99 order', expectedResult: 'Payment authorized and receipt generated', isOptional: false },
+        {
+          stepNumber: 1,
+          action: 'Submit valid test card for $49.99 order',
+          expectedResult: 'Payment authorized and receipt generated',
+          isOptional: false,
+        },
       ],
     });
 
@@ -348,7 +405,12 @@ async function runFixture() {
       sourceRequirementKey: req2.requirementKey,
       sourceRequirementVersionNumber: 1,
       steps: [
-        { stepNumber: 1, action: 'Submit invalid card digits', expectedResult: 'Card number invalid error', isOptional: false },
+        {
+          stepNumber: 1,
+          action: 'Submit invalid card digits',
+          expectedResult: 'Card number invalid error',
+          isOptional: false,
+        },
       ],
     });
 
@@ -365,7 +427,12 @@ async function runFixture() {
       sourceRequirementVersionNumber: 1,
       scenarioCandidateId: sc4.id,
       steps: [
-        { stepNumber: 1, action: 'Save 50 character display name', expectedResult: 'Display name updated', isOptional: false },
+        {
+          stepNumber: 1,
+          action: 'Save 50 character display name',
+          expectedResult: 'Display name updated',
+          isOptional: false,
+        },
       ],
     });
 
@@ -434,15 +501,26 @@ async function runFixture() {
 
     // 9. Query Pre-Cleanup Fixture Metrics for this Project
     const fixtureReqCount = await prisma.requirement.count({ where: { projectId } });
-    const fixtureScnCount = await prisma.requirementScenarioCandidate.count({ where: { projectId } });
+    const fixtureScnCount = await prisma.requirementScenarioCandidate.count({
+      where: { projectId },
+    });
     const fixtureTcCount = await prisma.testCase.count({ where: { projectId } });
-    const fixtureDraftCount = await prisma.testCase.count({ where: { projectId, reviewStatus: 'DRAFT' } });
-    const fixtureApprovedCount = await prisma.testCase.count({ where: { projectId, reviewStatus: 'APPROVED' } });
-    const fixtureRejectedCount = await prisma.testCase.count({ where: { projectId, reviewStatus: 'REJECTED' } });
+    const fixtureDraftCount = await prisma.testCase.count({
+      where: { projectId, reviewStatus: 'DRAFT' },
+    });
+    const fixtureApprovedCount = await prisma.testCase.count({
+      where: { projectId, reviewStatus: 'APPROVED' },
+    });
+    const fixtureRejectedCount = await prisma.testCase.count({
+      where: { projectId, reviewStatus: 'REJECTED' },
+    });
     const fixtureTraceCount = await prisma.requirementTestTrace.count({ where: { projectId } });
 
     // Traces for Req 3 evaluate as stale dynamically
-    const tracesReq3 = await traceService.listTracesForRequirement({ projectId, requirementId: req3.id });
+    const tracesReq3 = await traceService.listTracesForRequirement({
+      projectId,
+      requirementId: req3.id,
+    });
     const fixtureStaleTests = tracesReq3.traces.filter(t => t.isStale).length;
 
     // Coverage Summary via CoverageAnalysisService
@@ -460,7 +538,18 @@ async function runFixture() {
       CERTIFICATION_FIXTURE_ELIGIBLE_REQUIREMENTS: covSummary.eligibleRequirements,
       CERTIFICATION_FIXTURE_COVERED_REQUIREMENTS: covSummary.coveredCount,
       CERTIFICATION_FIXTURE_UNCOVERED_REQUIREMENTS: covSummary.uncoveredCount,
+      CERTIFICATION_FIXTURE_OTHER_COVERAGE_STATE: `${covSummary.partiallyCoveredCount} (PARTIALLY_COVERED)`,
       CERTIFICATION_FIXTURE_COVERAGE: `${covSummary.overallCoveragePercentage}%`,
+      COVERAGE_COUNT_INVARIANT:
+        covSummary.eligibleRequirements ===
+        covSummary.coveredCount + covSummary.partiallyCoveredCount + covSummary.uncoveredCount
+          ? 'PASS'
+          : 'FAIL',
+      COVERAGE_FORMULA_CHECK:
+        covSummary.overallCoveragePercentage ===
+        Math.round((covSummary.coveredCount / covSummary.eligibleRequirements) * 100)
+          ? 'PASS'
+          : 'FAIL',
     };
 
     console.log('\n================ PRE-CLEANUP FIXTURE METRICS ================');
