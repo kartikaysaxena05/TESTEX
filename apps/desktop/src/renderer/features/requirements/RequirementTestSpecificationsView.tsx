@@ -194,7 +194,7 @@ export const RequirementTestSpecificationsView: React.FC<
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-base font-semibold text-slate-100">
-            Phase 51 & 52: Test Specifications & Persistence
+            Test Specifications & Persistence
           </h3>
           <p className="text-xs text-slate-400">
             Enriches test scenarios with grounded preconditions, data requirements, observable

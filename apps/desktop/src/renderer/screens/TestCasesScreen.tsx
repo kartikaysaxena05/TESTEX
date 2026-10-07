@@ -43,9 +43,6 @@ export function TestCasesScreen(): React.JSX.Element {
           }`}
         >
           <span>Review, Governance & Versioning</span>
-          <span className="px-1.5 py-0.2 rounded bg-blue-500/30 text-[10px] text-blue-200 font-bold">
-            Phase 56
-          </span>
         </button>
       </div>
 

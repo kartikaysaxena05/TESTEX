@@ -205,8 +205,18 @@ export const RequirementQualityView: React.FC<RequirementQualityViewProps> = ({
   if (!analysis) {
     return (
       <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-950/40 p-8 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-zinc-400">
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div
+          className="mx-auto flex items-center justify-center rounded-full bg-zinc-900 text-zinc-400"
+          style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px', flexShrink: 0 }}
+        >
+          <svg
+            width="24"
+            height="24"
+            style={{ width: '24px', height: '24px', minWidth: '24px', minHeight: '24px', flexShrink: 0 }}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

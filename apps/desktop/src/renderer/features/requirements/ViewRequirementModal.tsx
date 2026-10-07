@@ -76,20 +76,26 @@ export function ViewRequirementModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="view-requirement-title"
     >
-      <div className="relative w-full max-w-2xl bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl overflow-hidden my-8">
-        <div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-sm font-bold text-sky-400 bg-sky-950/60 border border-sky-800/60 px-2.5 py-1 rounded">
+      <div
+        className="relative w-full max-w-4xl max-h-[92vh] bg-[#161616] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        style={{
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        {/* Fixed Header */}
+        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between flex-shrink-0 bg-[#161616]">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="font-mono text-sm font-bold text-sky-400 bg-sky-950/60 border border-sky-800/60 px-2.5 py-1 rounded flex-shrink-0">
               {requirement.requirementKey}
             </span>
             <h2
               id="view-requirement-title"
-              className="text-base font-semibold text-neutral-100 line-clamp-1"
+              className="text-base font-semibold text-neutral-100 truncate"
             >
               {requirement.title}
             </h2>
@@ -97,14 +103,27 @@ export function ViewRequirementModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-neutral-400 hover:text-neutral-200 transition-colors p-1 rounded"
+            className="text-neutral-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 flex-shrink-0 ml-3"
             aria-label="Close"
           >
-            ✕
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
+        {/* Scrollable Body */}
+        <div className="p-6 space-y-6 flex-1 overflow-y-auto overscroll-contain">
           {/* Metadata badges */}
           <div className="flex flex-wrap gap-2 items-center">
             <Badge variant={getStatusVariant(requirement.status)}>
@@ -288,8 +307,8 @@ export function ViewRequirementModal({
           </div>
         </div>
 
-        {/* Action bar */}
-        <div className="px-6 py-4 border-t border-neutral-800 bg-neutral-950/40 flex items-center justify-between">
+        {/* Fixed Action bar */}
+        <div className="px-6 py-4 border-t border-white/10 bg-[#141414] flex items-center justify-between flex-shrink-0 gap-3">
           <div className="flex flex-wrap gap-2">
             {!isArchivedProject && (
               <>

@@ -60,7 +60,7 @@ export function EmptyProjectSourceSelection({
       id: "website",
       title: "Website",
       description: "Connect a local development server, staging URL, or live web application.",
-      phaseBadge: "Active / Phase 119",
+      phaseBadge: "Active",
       isAvailable: true,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -74,7 +74,7 @@ export function EmptyProjectSourceSelection({
       id: "repository",
       title: "Repository",
       description: "Connect a Git repository for code intelligence, pull requests, and automated test generation.",
-      phaseBadge: "Active / Phase 120",
+      phaseBadge: "Active",
       isAvailable: true,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -87,7 +87,7 @@ export function EmptyProjectSourceSelection({
       id: "local-folder",
       title: "Local Folder",
       description: "Target a folder on your local filesystem containing application source code or tests.",
-      phaseBadge: "Active / Phase 121",
+      phaseBadge: "Active",
       isAvailable: true,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -99,7 +99,7 @@ export function EmptyProjectSourceSelection({
       id: "browser-app",
       title: "Browser / Running App",
       description: "Attach directly to an active browser session or locally running application instance.",
-      phaseBadge: "Active / Phase 122",
+      phaseBadge: "Active",
       isAvailable: true,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

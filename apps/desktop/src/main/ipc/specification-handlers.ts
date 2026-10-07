@@ -12,7 +12,9 @@ import {
 } from '@ai-quality/contracts';
 import {
   AiInvalidRequestError,
+  AiPromptExecutionService,
   ProjectNotFoundError,
+  RequirementContextRetrievalService,
   TestSpecificationEnrichmentService,
   TestSpecificationsGenerationFailedError,
   TestSpecificationsGroundingFailedError,
@@ -22,8 +24,6 @@ import {
   TestSpecificationsScenarioNotFoundError,
   TestSpecificationsSchemaValidationFailedError,
   getPrismaClient,
-  type AiPromptExecutionService,
-  type RequirementContextRetrievalService,
 } from '@ai-quality/core';
 
 let serviceInstance: TestSpecificationEnrichmentService | null = null;
@@ -39,16 +39,10 @@ export function getTestSpecificationService(
     throw new Error('Database client is not initialized.');
   }
 
-  if (!promptExecutionService || !retrievalService) {
-    throw new Error(
-      'TestSpecificationEnrichmentService requires promptExecutionService and retrievalService for initialization.',
-    );
-  }
-
   serviceInstance = new TestSpecificationEnrichmentService({
     prisma,
-    promptExecutionService,
-    retrievalService,
+    promptExecutionService: promptExecutionService ?? new AiPromptExecutionService(),
+    retrievalService: retrievalService ?? new RequirementContextRetrievalService(),
   });
 
   return serviceInstance;
@@ -71,7 +65,7 @@ export async function handleEnrichTestSpecifications(
     );
   }
 
-  const s = service ?? serviceInstance;
+  const s = service ?? getTestSpecificationService();
   if (!s) {
     throw new Error('TestSpecificationEnrichmentService is not available.');
   }
@@ -111,7 +105,7 @@ export async function handleGetEnrichedTestSpecifications(
     );
   }
 
-  const s = service ?? serviceInstance;
+  const s = service ?? getTestSpecificationService();
   if (!s) {
     throw new Error('TestSpecificationEnrichmentService is not available.');
   }

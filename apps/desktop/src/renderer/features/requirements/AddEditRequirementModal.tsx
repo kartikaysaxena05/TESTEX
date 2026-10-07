@@ -180,13 +180,18 @@ export function AddEditRequirementModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="requirement-modal-title"
     >
-      <div className="relative w-full max-w-2xl bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl overflow-hidden my-8">
-        <div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between">
+      <div
+        className="relative w-full max-w-2xl max-h-[92vh] bg-[#161616] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        style={{
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between flex-shrink-0 bg-[#161616]">
           <h2 id="requirement-modal-title" className="text-lg font-semibold text-neutral-100">
             {isEditing
               ? `Edit Requirement: ${editingRequirement?.requirementKey}`
@@ -196,14 +201,27 @@ export function AddEditRequirementModal({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-neutral-400 hover:text-neutral-200 transition-colors p-1 rounded"
+            className="text-neutral-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 flex-shrink-0"
             aria-label="Close"
           >
-            ✕
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-6 space-y-4 flex-1 overflow-y-auto overscroll-contain">
           {submitError && (
             <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-sm text-rose-400">
               {submitError}
@@ -343,8 +361,9 @@ export function AddEditRequirementModal({
               </Select>
             </div>
           </div>
+        </div>
 
-          <div className="pt-4 border-t border-neutral-800 flex items-center justify-end gap-3">
+          <div className="px-6 py-4 border-t border-white/10 bg-[#141414] flex items-center justify-end gap-3 flex-shrink-0">
             <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>

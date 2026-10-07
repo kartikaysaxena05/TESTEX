@@ -115,7 +115,6 @@ export function RequirementCategorizedTestsView({
         <div>
           <h3 className="text-base font-semibold text-slate-100 flex items-center gap-2">
             Categorized Test Designs
-            <Badge variant="info">Phase 50</Badge>
           </h3>
           <p className="text-xs text-slate-400">
             Deliberate positive, negative, boundary, and validation test designs grounded in
