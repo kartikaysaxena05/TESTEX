@@ -391,4 +391,14 @@ describe('TestSpecificationEnrichmentService Integration Tests', () => {
       TestSpecificationsScenarioNotFoundError,
     );
   });
+
+  after(async () => {
+    if (prisma && testProjectId) {
+      try {
+        await prisma.project.delete({ where: { id: testProjectId } });
+      } catch {
+        // Ignore teardown errors
+      }
+    }
+  });
 });

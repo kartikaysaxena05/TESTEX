@@ -3,10 +3,12 @@
  * Privileged IPC handlers managing source attachment, detachment, validation, metadata refresh, and retrieval.
  */
 
+import path from 'node:path';
 import {
   sourceProjectIdSchema,
   type ProjectSourceDto,
   type AttachLocalDirectoryResult,
+  type PickDirectoryResult,
   type DetachSourceResult,
 } from '@ai-quality/contracts';
 import { SourceService } from '@ai-quality/core';
@@ -26,6 +28,25 @@ export function setSourceServiceForTest(service: SourceService | null): void {
 }
 
 /**
+ * Handles picking a local directory via the native OS folder picker dialog.
+ */
+export async function handlePickDirectory(
+  pickerFn: typeof showFolderPickerDialog = showFolderPickerDialog,
+): Promise<PickDirectoryResult> {
+  const pickerResult = await pickerFn();
+  if (pickerResult.cancelled) {
+    return { cancelled: true };
+  }
+
+  const folderName = path.basename(pickerResult.directoryPath);
+  return {
+    cancelled: false,
+    directoryPath: pickerResult.directoryPath,
+    folderName,
+  };
+}
+
+/**
  * Handles get source request for a project.
  */
 export async function handleGetSource(
@@ -37,26 +58,43 @@ export async function handleGetSource(
 }
 
 /**
- * Handles attach local directory request: validates project, opens native folder picker,
- * and attaches selected directory.
+ * Handles attach local directory request: validates project, opens native folder picker
+ * (or uses already selected directoryPath), and attaches directory.
  */
 export async function handleAttachLocalDirectory(
-  projectId: unknown,
+  payload: unknown,
   service: SourceService = getSourceService(),
   pickerFn: typeof showFolderPickerDialog = showFolderPickerDialog,
 ): Promise<AttachLocalDirectoryResult> {
-  const validated = sourceProjectIdSchema.parse({ projectId });
+  let projectId: string;
+  let targetPath: string | undefined;
 
-  // 1. Open native OS folder picker dialog
-  const pickerResult = await pickerFn();
-  if (pickerResult.cancelled) {
-    return { cancelled: true };
+  if (typeof payload === 'string') {
+    projectId = sourceProjectIdSchema.parse({ projectId: payload }).projectId;
+  } else if (payload && typeof payload === 'object') {
+    const raw = payload as { projectId?: unknown; directoryPath?: unknown };
+    projectId = sourceProjectIdSchema.parse({ projectId: raw.projectId }).projectId;
+    if (typeof raw.directoryPath === 'string' && raw.directoryPath.trim().length > 0) {
+      targetPath = raw.directoryPath.trim();
+    }
+  } else {
+    projectId = sourceProjectIdSchema.parse({ projectId: payload }).projectId;
+  }
+
+  // 1. If directoryPath is provided, use it; otherwise open native OS folder picker dialog
+  let finalPath = targetPath;
+  if (!finalPath) {
+    const pickerResult = await pickerFn();
+    if (pickerResult.cancelled) {
+      return { cancelled: true };
+    }
+    finalPath = pickerResult.directoryPath;
   }
 
   // 2. Attach selected canonical directory and compute identity
   const source = await service.attachLocalDirectory(
-    validated.projectId,
-    pickerResult.directoryPath,
+    projectId,
+    finalPath,
   );
 
   return {

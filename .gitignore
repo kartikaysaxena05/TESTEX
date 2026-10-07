@@ -16,7 +16,9 @@ build/
 !.env.example
 
 # Test & Coverage
+/coverage/
 coverage/
+!**/src/**/coverage/
 .nyc_output/
 playwright-report/
 test-results/

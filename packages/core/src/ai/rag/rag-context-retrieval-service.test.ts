@@ -186,4 +186,14 @@ describe('RequirementContextRetrievalService Integration', () => {
     assert.ok(pack.diagnostics.candidateCount >= pack.items.length);
     assert.ok(pack.diagnostics.durationMs >= 0);
   });
+
+  after(async () => {
+    if (prisma && testProjectId) {
+      try {
+        await prisma.project.delete({ where: { id: testProjectId } });
+      } catch {
+        // Ignore teardown errors
+      }
+    }
+  });
 });

@@ -180,12 +180,12 @@ export function RequirementsScreen(): React.JSX.Element {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="requirements-screen-container">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-neutral-100">Requirement Intelligence</h1>
+      <div className="requirements-header">
+        <div className="requirements-header-info">
+          <div className="requirements-header-title-row">
+            <h1 className="requirements-title">Requirement Intelligence</h1>
             {summary && (
               <Badge variant="info">
                 {summary.totalCount} {summary.totalCount === 1 ? 'Requirement' : 'Requirements'}
@@ -193,13 +193,13 @@ export function RequirementsScreen(): React.JSX.Element {
             )}
             {isArchivedProject && <Badge variant="warning">Archived (Read-Only)</Badge>}
           </div>
-          <p className="text-xs text-neutral-400 mt-1">
+          <p className="requirements-subtitle">
             Manual requirement management, specification tracking, identity integrity, and lifecycle
             state management.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="requirements-header-actions">
           <Button variant="secondary" size="sm" onClick={() => refetch()} disabled={isLoading}>
             Refresh
           </Button>
@@ -227,25 +227,16 @@ export function RequirementsScreen(): React.JSX.Element {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center gap-2 border-b border-neutral-800 pb-2">
+      <nav className="requirements-tab-nav" aria-label="Requirement Views">
         <button
           type="button"
           onClick={() => setActiveTab('REQUIREMENTS')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 ${
-            activeTab === 'REQUIREMENTS'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60'
-          }`}
+          className={`requirements-tab-btn ${activeTab === 'REQUIREMENTS' ? 'active' : ''}`}
+          aria-current={activeTab === 'REQUIREMENTS' ? 'page' : undefined}
         >
           <span>Requirements</span>
           {summary && (
-            <span
-              className={`px-1.5 py-0.5 text-[10px] rounded-full ${
-                activeTab === 'REQUIREMENTS'
-                  ? 'bg-blue-800 text-white'
-                  : 'bg-neutral-800 text-neutral-400'
-              }`}
-            >
+            <span className="requirements-tab-badge">
               {summary.totalCount}
             </span>
           )}
@@ -254,15 +245,12 @@ export function RequirementsScreen(): React.JSX.Element {
         <button
           type="button"
           onClick={() => setActiveTab('DOCUMENTS')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 ${
-            activeTab === 'DOCUMENTS'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60'
-          }`}
+          className={`requirements-tab-btn ${activeTab === 'DOCUMENTS' ? 'active' : ''}`}
+          aria-current={activeTab === 'DOCUMENTS' ? 'page' : undefined}
         >
           <span>Requirement Documents</span>
         </button>
-      </div>
+      </nav>
 
       {activeTab === 'DOCUMENTS' ? (
         <RequirementDocumentsList
@@ -273,28 +261,40 @@ export function RequirementsScreen(): React.JSX.Element {
         <>
           {/* Summary status pills */}
           {summary && summary.totalCount > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 bg-neutral-900 border border-neutral-800 rounded-lg flex items-center justify-between">
-                <span className="text-xs text-neutral-400">Active</span>
-                <span className="text-sm font-semibold text-emerald-400">
+            <div className="requirements-metrics-grid">
+              <div className="requirements-metric-card">
+                <div className="requirements-metric-label">
+                  <span className="requirements-metric-dot active" />
+                  <span>Active</span>
+                </div>
+                <span className="requirements-metric-value text-emerald-400">
                   {summary.countsByStatus.ACTIVE}
                 </span>
               </div>
-              <div className="p-3 bg-neutral-900 border border-neutral-800 rounded-lg flex items-center justify-between">
-                <span className="text-xs text-neutral-400">Draft</span>
-                <span className="text-sm font-semibold text-neutral-300">
+              <div className="requirements-metric-card">
+                <div className="requirements-metric-label">
+                  <span className="requirements-metric-dot draft" />
+                  <span>Draft</span>
+                </div>
+                <span className="requirements-metric-value text-neutral-300">
                   {summary.countsByStatus.DRAFT}
                 </span>
               </div>
-              <div className="p-3 bg-neutral-900 border border-neutral-800 rounded-lg flex items-center justify-between">
-                <span className="text-xs text-neutral-400">Archived</span>
-                <span className="text-sm font-semibold text-neutral-400">
+              <div className="requirements-metric-card">
+                <div className="requirements-metric-label">
+                  <span className="requirements-metric-dot archived" />
+                  <span>Archived</span>
+                </div>
+                <span className="requirements-metric-value text-neutral-400">
                   {summary.countsByStatus.ARCHIVED}
                 </span>
               </div>
-              <div className="p-3 bg-neutral-900 border border-neutral-800 rounded-lg flex items-center justify-between">
-                <span className="text-xs text-neutral-400">Deprecated</span>
-                <span className="text-sm font-semibold text-amber-400">
+              <div className="requirements-metric-card">
+                <div className="requirements-metric-label">
+                  <span className="requirements-metric-dot deprecated" />
+                  <span>Deprecated</span>
+                </div>
+                <span className="requirements-metric-value text-amber-400">
                   {summary.countsByStatus.DEPRECATED}
                 </span>
               </div>
@@ -302,10 +302,24 @@ export function RequirementsScreen(): React.JSX.Element {
           )}
 
           {/* Filter Toolbar */}
-          <div className="p-4 bg-neutral-900/80 border border-neutral-800 rounded-xl space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-              <div>
+          <div className="requirements-filter-bar">
+            <div className="requirements-filter-inputs-row">
+              <div className="requirements-search-wrapper">
+                <svg
+                  className="requirements-search-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
                 <Input
+                  className="w-full"
                   placeholder="Search by key or title..."
                   value={filters.searchQuery ?? ''}
                   onChange={e => updateFilters({ searchQuery: e.target.value || undefined })}
@@ -368,13 +382,13 @@ export function RequirementsScreen(): React.JSX.Element {
             </div>
 
             {(filters.searchQuery || filters.status || filters.type || filters.priority) && (
-              <div className="flex justify-end pt-1">
+              <div className="requirements-filter-footer">
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="text-xs text-neutral-400 hover:text-neutral-200 underline transition-colors"
+                  className="requirements-clear-filters-btn"
                 >
-                  Clear Filters
+                  ✕ Clear Filters
                 </button>
               </div>
             )}
@@ -402,7 +416,7 @@ export function RequirementsScreen(): React.JSX.Element {
           )}
 
           {!isLoading && !error && requirements.length === 0 && (
-            <div className="p-8 bg-neutral-900/50 border border-neutral-800 rounded-xl">
+            <div className="requirements-empty-card">
               <EmptyState
                 screenId="requirements-empty"
                 title="No Requirements Available"
@@ -439,56 +453,58 @@ export function RequirementsScreen(): React.JSX.Element {
           )}
 
           {!isLoading && !error && requirements.length > 0 && (
-            <div className="space-y-4">
-              <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-sm">
-                    <thead>
-                      <tr className="border-b border-neutral-800 bg-neutral-950/60 text-xs font-semibold uppercase text-neutral-400">
-                        <th className="py-3 px-4">Key</th>
-                        <th className="py-3 px-4">Title</th>
-                        <th className="py-3 px-4">Type</th>
-                        <th className="py-3 px-4">Priority</th>
-                        <th className="py-3 px-4">Status</th>
-                        <th className="py-3 px-4">Source</th>
-                        <th className="py-3 px-4">Updated</th>
-                        <th className="py-3 px-4 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-neutral-800/60">
-                      {requirements.map(req => (
-                        <tr
-                          key={req.id}
-                          className="hover:bg-neutral-800/30 transition-colors group cursor-pointer"
-                          onClick={() => handleOpenView(req)}
-                        >
-                          <td className="py-3.5 px-4 font-mono font-medium text-blue-400 whitespace-nowrap">
-                            {req.requirementKey}
-                          </td>
-                          <td className="py-3.5 px-4 font-medium text-neutral-200 max-w-md truncate">
+            <div className="requirements-table-card">
+              <div className="overflow-x-auto">
+                <table className="requirements-table">
+                  <thead>
+                    <tr className="requirements-table-head-row">
+                      <th className="requirements-table-th">Key</th>
+                      <th className="requirements-table-th">Title</th>
+                      <th className="requirements-table-th">Type</th>
+                      <th className="requirements-table-th">Priority</th>
+                      <th className="requirements-table-th">Status</th>
+                      <th className="requirements-table-th">Source</th>
+                      <th className="requirements-table-th">Updated</th>
+                      <th className="requirements-table-th text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {requirements.map(req => (
+                      <tr
+                        key={req.id}
+                        className="requirements-table-row"
+                        onClick={() => handleOpenView(req)}
+                      >
+                        <td className="requirements-table-td">
+                          <span className="requirements-key-badge">{req.requirementKey}</span>
+                        </td>
+                        <td className="requirements-table-td">
+                          <div className="requirements-title-cell" title={req.title}>
                             {req.title}
-                          </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap text-xs text-neutral-400">
-                            {req.type}
-                          </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap">
-                            <Badge variant={getPriorityBadgeVariant(req.priority)}>
-                              {req.priority}
-                            </Badge>
-                          </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap">
-                            <Badge variant={getStatusBadgeVariant(req.status)}>{req.status}</Badge>
-                          </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap text-xs text-neutral-400">
-                            {req.requirementSourceName || 'Manual'}
-                          </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap text-xs text-neutral-500">
-                            {new Date(req.updatedAt).toLocaleDateString()}
-                          </td>
-                          <td
-                            className="py-3.5 px-4 text-right space-x-2 whitespace-nowrap"
-                            onClick={e => e.stopPropagation()}
-                          >
+                          </div>
+                        </td>
+                        <td className="requirements-table-td whitespace-nowrap text-xs text-neutral-400">
+                          {req.type}
+                        </td>
+                        <td className="requirements-table-td whitespace-nowrap">
+                          <Badge variant={getPriorityBadgeVariant(req.priority)}>
+                            {req.priority}
+                          </Badge>
+                        </td>
+                        <td className="requirements-table-td whitespace-nowrap">
+                          <Badge variant={getStatusBadgeVariant(req.status)}>{req.status}</Badge>
+                        </td>
+                        <td className="requirements-table-td whitespace-nowrap text-xs text-neutral-400">
+                          {req.requirementSourceName || 'Manual'}
+                        </td>
+                        <td className="requirements-table-td whitespace-nowrap text-xs text-neutral-500">
+                          {new Date(req.updatedAt).toLocaleDateString()}
+                        </td>
+                        <td
+                          className="requirements-table-td"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <div className="requirements-actions-cell">
                             <Button
                               variant="secondary"
                               size="sm"
@@ -504,40 +520,40 @@ export function RequirementsScreen(): React.JSX.Element {
                             >
                               Edit
                             </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination footer */}
-                {totalPages > 1 && (
-                  <div className="p-3 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400 bg-neutral-950/40">
-                    <span>
-                      Showing page {page} of {totalPages} ({total} total)
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={page <= 1}
-                        onClick={() => setPage(page - 1)}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={page >= totalPages}
-                        onClick={() => setPage(page + 1)}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+
+              {/* Pagination footer */}
+              {totalPages > 1 && (
+                <div className="requirements-pagination-bar">
+                  <span>
+                    Showing page {page} of {totalPages} ({total} total)
+                  </span>
+                  <div className="requirements-pagination-actions">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={page <= 1}
+                      onClick={() => setPage(page - 1)}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={page >= totalPages}
+                      onClick={() => setPage(page + 1)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </>

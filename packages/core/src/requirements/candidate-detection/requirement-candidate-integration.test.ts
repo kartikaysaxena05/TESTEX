@@ -34,6 +34,7 @@ describe('RequirementCandidateService PostgreSQL Integration Tests', () => {
   let docService: RequirementDocumentService;
   let extractionService: RequirementDocumentExtractionService;
   let candidateService: RequirementCandidateService;
+  const createdProjectIds: string[] = [];
 
   const prisma = getPrismaClient()!;
 
@@ -60,6 +61,15 @@ describe('RequirementCandidateService PostgreSQL Integration Tests', () => {
   });
 
   after(async () => {
+    if (prisma && createdProjectIds.length > 0) {
+      try {
+        await prisma.project.deleteMany({
+          where: { id: { in: createdProjectIds } },
+        });
+      } catch {
+        // Ignore teardown errors
+      }
+    }
     if (tempDir && fs.existsSync(tempDir)) {
       await fs.promises.rm(tempDir, { recursive: true, force: true });
     }
@@ -71,6 +81,7 @@ describe('RequirementCandidateService PostgreSQL Integration Tests', () => {
       name: `Candidate Integ Project ${Date.now()}`,
       description: 'Project for requirement candidate detection integration testing',
     });
+    createdProjectIds.push(project.id);
 
     // 2. Prepare sample SRS markdown document
     const srsContent = `# Software Requirements Specification
@@ -248,6 +259,7 @@ Passwords are required to be at least 10 characters in length.
     const project = await projectRepo.createProject({
       name: `Archived Candidate Integ Project ${Date.now()}`,
     });
+    createdProjectIds.push(project.id);
 
     const sampleFilePath = path.join(tempDir, 'sample_archived.txt');
     await fs.promises.writeFile(

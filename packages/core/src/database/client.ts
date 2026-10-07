@@ -3,8 +3,11 @@
  * Managed PrismaClient singleton and lifecycle manager.
  */
 
-import { PrismaClient } from '@prisma/client';
+import pkg from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 import { loadDatabaseConfig } from './config.js';
+
+const PrismaClientConstructor = (((pkg as unknown as { PrismaClient?: typeof PrismaClient }).PrismaClient) || pkg) as unknown as typeof PrismaClient;
 
 let prismaInstance: PrismaClient | null = null;
 let isDisconnecting = false;
@@ -27,7 +30,7 @@ export function getPrismaClient(): PrismaClient | null {
     return null;
   }
 
-  prismaInstance = new PrismaClient({
+  prismaInstance = new PrismaClientConstructor({
     datasourceUrl: config.connectionString,
     log: process.env['NODE_ENV'] === 'development' ? ['warn', 'error'] : ['error'],
   });

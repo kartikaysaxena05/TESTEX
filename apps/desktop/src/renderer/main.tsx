@@ -6,8 +6,14 @@ import { setupRendererErrorCapture } from './utils/setupRendererErrorCapture.js'
 import './styles/tokens.css';
 import './styles/globals.css';
 import './styles/layout.css';
+import './styles/utilities.css';
 import './ui/ui.css';
 import './features/dashboard/project-dashboard.css';
+import './features/test-runs/test-runs.css';
+import './screens/projects/projects-screen.css';
+import './screens/requirements/requirements-screen.css';
+import './screens/auth/auth-screen.css';
+import './screens/settings-screen.css';
 
 // Initialize global window and rejection listeners
 setupRendererErrorCapture();

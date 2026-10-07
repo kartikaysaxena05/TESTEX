@@ -14,11 +14,23 @@ body {
   background-color: var(--bg-app);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 13.5px;
   line-height: 1.5;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   user-select: none;
+}
+
+input,
+textarea,
+select,
+[contenteditable='true'] {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  caret-color: var(--accent-primary);
+  font-family: inherit;
 }
 
 #root {
@@ -36,28 +48,30 @@ button {
   background: none;
   cursor: pointer;
   outline: none;
+  user-select: none;
 }
 
 button:focus-visible {
   outline: 2px solid var(--border-focus);
-  outline-offset: -1px;
+  outline-offset: 2px;
 }
 
-/* Custom compact scrollbar for workspace */
+/* Custom premium scrollbar for workspace */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-app);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-default);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  transition: background 0.15s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-highlight);
+  background: rgba(255, 255, 255, 0.22);
 }

@@ -54,6 +54,31 @@ export async function createMainWindow(): Promise<BrowserWindow> {
     console.log(`[Renderer Console] (level ${level}) ${message} [${sourceId}:${line}]`);
   });
 
+  // Enable right-click context menu (Cut, Copy, Paste, Select All, Undo, Redo)
+  mainWindow.webContents.on('context-menu', (_event, params) => {
+    const { Menu, MenuItem } = electron;
+    if (!Menu || !MenuItem) return;
+
+    const contextMenu = new Menu();
+
+    if (params.isEditable) {
+      contextMenu.append(new MenuItem({ role: 'undo' }));
+      contextMenu.append(new MenuItem({ role: 'redo' }));
+      contextMenu.append(new MenuItem({ type: 'separator' }));
+      contextMenu.append(new MenuItem({ role: 'cut' }));
+      contextMenu.append(new MenuItem({ role: 'copy' }));
+      contextMenu.append(new MenuItem({ role: 'paste' }));
+      contextMenu.append(new MenuItem({ role: 'selectAll' }));
+    } else if (params.selectionText && params.selectionText.trim().length > 0) {
+      contextMenu.append(new MenuItem({ role: 'copy' }));
+      contextMenu.append(new MenuItem({ role: 'selectAll' }));
+    }
+
+    if (contextMenu.items.length > 0) {
+      contextMenu.popup();
+    }
+  });
+
   // Track window failure
   mainWindow.webContents.on(
     'did-fail-load',

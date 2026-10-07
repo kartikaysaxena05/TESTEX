@@ -11,6 +11,7 @@ import type {
   RequirementCoverageStatus,
   ReverseTraceabilityItemDto,
   TraceabilityMatrixRowDto,
+  RetestPlanDto,
 } from '@ai-quality/contracts';
 import { useProject } from '../context/ProjectContext.js';
 import {
@@ -20,6 +21,7 @@ import {
   ReverseTraceabilityView,
   OrphanTestsView,
 } from '../features/coverage/index.js';
+import { RetestPlanCard } from '../features/retest/index.js';
 import { EmptyState, Tabs, TabList, Tab, TabPanel, Button } from '../ui/index.js';
 
 export function TraceabilityScreen(): React.JSX.Element {
@@ -56,6 +58,32 @@ export function TraceabilityScreen(): React.JSX.Element {
   const [isOrphanLoading, setIsOrphanLoading] = useState<boolean>(false);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Retest Plan state
+  const [retestPlan, setRetestPlan] = useState<RetestPlanDto | null>(null);
+  const [isRetestLoading, setIsRetestLoading] = useState<boolean>(false);
+
+  const loadLatestRetestPlan = useCallback(async () => {
+    if (!selectedProjectId || !window.desktop?.retest?.listRetestPlans) {
+      return;
+    }
+    setIsRetestLoading(true);
+    try {
+      const res = await window.desktop.retest.listRetestPlans({
+        projectId: selectedProjectId,
+      });
+      if (res.ok && res.data.length > 0) {
+        const firstPlan = res.data[0];
+        if (firstPlan) {
+          setRetestPlan(firstPlan);
+        }
+      }
+    } catch {
+      // Non-fatal
+    } finally {
+      setIsRetestLoading(false);
+    }
+  }, [selectedProjectId]);
 
   // Load Forward RTM
   const loadMatrix = useCallback(async () => {
@@ -171,6 +199,12 @@ export function TraceabilityScreen(): React.JSX.Element {
     }
   }, [loadOrphanTests, selectedProjectId, activeTab]);
 
+  useEffect(() => {
+    if (selectedProjectId && activeTab === 'retest') {
+      loadLatestRetestPlan();
+    }
+  }, [loadLatestRetestPlan, selectedProjectId, activeTab]);
+
   if (!selectedProjectId) {
     return (
       <EmptyState
@@ -227,6 +261,7 @@ export function TraceabilityScreen(): React.JSX.Element {
           <Tab value="orphans">
             Orphan Tests Audit {reverseTotalOrphans > 0 ? `(${reverseTotalOrphans})` : ''}
           </Tab>
+          <Tab value="retest">Change Impact & Retest</Tab>
         </TabList>
 
         {/* Tab 1: Forward RTM */}
@@ -305,6 +340,17 @@ export function TraceabilityScreen(): React.JSX.Element {
             isLoading={isOrphanLoading}
             onPageChange={setOrphanPage}
             onRefresh={loadOrphanTests}
+          />
+        </TabPanel>
+
+        {/* Tab 4: Change Impact & Retest */}
+        <TabPanel value="retest">
+          <RetestPlanCard
+            projectId={selectedProjectId}
+            plan={retestPlan}
+            isLoading={isRetestLoading}
+            onPlanGenerated={setRetestPlan}
+            onRefresh={loadLatestRetestPlan}
           />
         </TabPanel>
       </Tabs>

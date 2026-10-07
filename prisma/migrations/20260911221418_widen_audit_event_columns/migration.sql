@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "repair_audit_events" ALTER COLUMN "previous_state" SET DATA TYPE VARCHAR(255),
+ALTER COLUMN "new_state" SET DATA TYPE VARCHAR(255),
+ALTER COLUMN "causation_id" SET DATA TYPE VARCHAR(255),
+ALTER COLUMN "idempotency_key" SET DATA TYPE VARCHAR(255);

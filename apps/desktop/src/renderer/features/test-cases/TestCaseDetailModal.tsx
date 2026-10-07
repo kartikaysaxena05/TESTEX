@@ -7,6 +7,7 @@ import type {
   RequirementTestTraceDto,
   TestCaseDetailDto,
   TestCaseValidationDto,
+  ExecutableTestPlanDto,
 } from '@ai-quality/contracts';
 import React, { useEffect, useState } from 'react';
 
@@ -23,9 +24,17 @@ export const TestCaseDetailModal: React.FC<TestCaseDetailModalProps> = ({
 }) => {
   const [validation, setValidation] = useState<TestCaseValidationDto | null>(null);
   const [traces, setTraces] = useState<readonly RequirementTestTraceDto[]>([]);
+  const [plan, setPlan] = useState<ExecutableTestPlanDto | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [isCompiling, setIsCompiling] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'details' | 'validation' | 'traceability'>('details');
+  const [compilerError, setCompilerError] = useState<string | null>(null);
+  const [isEnqueueingRun, setIsEnqueueingRun] = useState<boolean>(false);
+  const [enqueueRunSuccess, setEnqueueRunSuccess] = useState<string | null>(null);
+  const [enqueueRunError, setEnqueueRunError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'details' | 'validation' | 'traceability' | 'plan'>(
+    'details',
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -59,12 +68,81 @@ export const TestCaseDetailModal: React.FC<TestCaseDetailModalProps> = ({
       }
     };
 
+    const fetchPlan = async () => {
+      if (!window.desktop?.planCompiler) return;
+      try {
+        const res = await window.desktop.planCompiler.getByTestCase({
+          projectId: testCase.projectId,
+          testCaseId: testCase.id,
+        });
+        if (isMounted && res.ok && res.data) {
+          setPlan(res.data);
+        }
+      } catch (err: unknown) {
+        console.error('Failed to load executable plan:', err);
+      }
+    };
+
     fetchLatestValidation();
     fetchTraces();
+    fetchPlan();
     return () => {
       isMounted = false;
     };
   }, [testCase.id, testCase.projectId]);
+
+  const handleCompilePlan = async (previewOnly = false) => {
+    if (!window.desktop?.planCompiler) return;
+    setIsCompiling(true);
+    setCompilerError(null);
+    try {
+      const res = previewOnly
+        ? await window.desktop.planCompiler.preview({
+            projectId: testCase.projectId,
+            testCaseId: testCase.id,
+          })
+        : await window.desktop.planCompiler.compile({
+            projectId: testCase.projectId,
+            testCaseId: testCase.id,
+            forceRecompile: true,
+          });
+
+      if (res.ok) {
+        setPlan(res.data);
+        setActiveTab('plan');
+      } else {
+        setCompilerError(res.error.message);
+      }
+    } catch (err: unknown) {
+      setCompilerError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsCompiling(false);
+    }
+  };
+
+  const handleEnqueueRun = async () => {
+    if (!window.desktop?.testRuns) return;
+    setIsEnqueueingRun(true);
+    setEnqueueRunError(null);
+    setEnqueueRunSuccess(null);
+    try {
+      const res = await window.desktop.testRuns.enqueue({
+        projectId: testCase.projectId,
+        testCaseId: testCase.id,
+      });
+      if (res.ok) {
+        setEnqueueRunSuccess(
+          `Test run enqueued successfully! ID: ${res.data.id.slice(0, 8)}... (Status: ${res.data.status})`,
+        );
+      } else {
+        setEnqueueRunError(res.error.message);
+      }
+    } catch (err: unknown) {
+      setEnqueueRunError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsEnqueueingRun(false);
+    }
+  };
 
   const handleRunValidation = async () => {
     if (!window.desktop?.testValidation) return;
@@ -261,22 +339,74 @@ export const TestCaseDetailModal: React.FC<TestCaseDetailModalProps> = ({
                 </span>
               )}
             </button>
+            <button
+              onClick={() => setActiveTab('plan')}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium rounded transition ${
+                activeTab === 'plan'
+                  ? 'bg-slate-800 text-slate-100 border border-slate-700'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>Executable Plan</span>
+              {plan && (
+                <span
+                  className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+                    plan.status === 'VALID'
+                      ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                      : plan.status === 'INVALID'
+                        ? 'bg-rose-950 text-rose-300 border border-rose-800'
+                        : 'bg-amber-950 text-amber-300 border border-amber-800'
+                  }`}
+                >
+                  {plan.status}
+                </span>
+              )}
+            </button>
           </div>
 
-          <button
-            onClick={handleRunValidation}
-            disabled={isValidating}
-            className="rounded bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-500 transition disabled:opacity-50 flex items-center space-x-1.5"
-          >
-            {isValidating ? (
-              <span>Validating...</span>
-            ) : (
-              <>
-                <span>⚡ Run Validation Check</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handleCompilePlan(true)}
+              disabled={isCompiling}
+              className="rounded border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-300 hover:bg-slate-700 transition disabled:opacity-50"
+            >
+              Preview Plan
+            </button>
+            <button
+              onClick={() => handleCompilePlan(false)}
+              disabled={isCompiling}
+              className="rounded bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-500 transition disabled:opacity-50 flex items-center space-x-1.5"
+            >
+              {isCompiling ? (
+                <span>Compiling...</span>
+              ) : (
+                <>
+                  <span>⚙ Compile Plan</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleRunValidation}
+              disabled={isValidating}
+              className="rounded bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-500 transition disabled:opacity-50 flex items-center space-x-1.5"
+            >
+              {isValidating ? (
+                <span>Validating...</span>
+              ) : (
+                <>
+                  <span>⚡ Validate</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* Compiler Error Banner */}
+        {compilerError && (
+          <div className="bg-rose-950/80 border-b border-rose-800 px-6 py-2 text-xs text-rose-300">
+            Plan Compilation Error: {compilerError}
+          </div>
+        )}
 
         {/* Validation Error Banner */}
         {validationError && (
@@ -495,6 +625,320 @@ export const TestCaseDetailModal: React.FC<TestCaseDetailModalProps> = ({
                     className="rounded bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition"
                   >
                     Run Hallucination & Grounding Check
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : activeTab === 'plan' ? (
+            <div className="space-y-4">
+              {plan ? (
+                <>
+                  {/* Plan Header Card */}
+                  <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-4 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                      <div className="flex items-center space-x-2">
+                        <span
+                          className={`rounded px-2.5 py-0.5 text-xs font-bold border ${
+                            plan.status === 'VALID'
+                              ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
+                              : plan.status === 'INVALID'
+                                ? 'bg-rose-950 text-rose-300 border-rose-700'
+                                : 'bg-amber-950 text-amber-300 border-amber-700'
+                          }`}
+                        >
+                          STATUS: {plan.status}
+                        </span>
+                        <span
+                          className={`rounded px-2 py-0.5 text-xs font-semibold border ${
+                            plan.isExecutable
+                              ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
+                              : 'bg-rose-950/80 text-rose-300 border-rose-800'
+                          }`}
+                        >
+                          {plan.isExecutable ? '✓ EXECUTABLE' : '✕ NOT EXECUTABLE'}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-3 text-xs font-mono text-slate-400">
+                        <span>Compiler: v{plan.compilerVersion}</span>
+                        <span>Schema: v{plan.planSchemaVersion}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <span className="text-slate-400">Plan Fingerprint (SHA-256): </span>
+                        <code className="font-mono text-[11px] text-cyan-300 break-all bg-slate-900 px-1.5 py-0.5 rounded">
+                          {plan.planFingerprint}
+                        </code>
+                      </div>
+                      <div className="text-right md:text-right">
+                        <span className="text-slate-400">Compiled At: </span>
+                        <span className="text-slate-200">
+                          {new Date(plan.compiledAt).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleCompilePlan(false)}
+                          disabled={isCompiling}
+                          className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition"
+                        >
+                          {isCompiling ? 'Recompiling...' : 'Recompile Plan'}
+                        </button>
+                      </div>
+
+                      {plan.isExecutable && (
+                        <button
+                          type="button"
+                          onClick={handleEnqueueRun}
+                          disabled={isEnqueueingRun}
+                          className="px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow transition flex items-center gap-1.5"
+                        >
+                          <span>
+                            {isEnqueueingRun ? 'Enqueueing...' : '▶ Enqueue Execution Run'}
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {enqueueRunSuccess && (
+                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs rounded-lg flex items-center justify-between">
+                      <span>✓ {enqueueRunSuccess}</span>
+                      <button
+                        type="button"
+                        onClick={() => setEnqueueRunSuccess(null)}
+                        className="text-emerald-400 hover:text-emerald-200"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+
+                  {enqueueRunError && (
+                    <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs rounded-lg flex items-center justify-between">
+                      <span>✕ {enqueueRunError}</span>
+                      <button
+                        type="button"
+                        onClick={() => setEnqueueRunError(null)}
+                        className="text-rose-400 hover:text-rose-200"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Compilation Diagnostics (if any) */}
+                  {plan.diagnostics.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Compilation Diagnostics ({plan.diagnostics.length})
+                      </h4>
+                      <div className="space-y-2">
+                        {plan.diagnostics.map((d, i) => (
+                          <div
+                            key={i}
+                            className={`rounded-lg border p-3 text-xs space-y-1 ${
+                              d.severity === 'ERROR'
+                                ? 'bg-rose-950/40 border-rose-800/80 text-rose-200'
+                                : d.severity === 'WARNING'
+                                  ? 'bg-amber-950/40 border-amber-800/80 text-amber-200'
+                                  : 'bg-cyan-950/40 border-cyan-800/80 text-cyan-200'
+                            }`}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <span className="font-bold px-1.5 py-0.2 rounded text-[10px] bg-slate-900 border border-slate-700">
+                                {d.severity}
+                              </span>
+                              <span className="font-mono font-semibold text-[11px]">{d.code}</span>
+                              {d.stepSequence && (
+                                <span className="text-slate-400">Step {d.stepSequence}</span>
+                              )}
+                            </div>
+                            <div className="font-medium text-slate-100">{d.message}</div>
+                            <div className="text-[11px] text-slate-400">Reason: {d.reason}</div>
+                            {d.suggestedAction && (
+                              <div className="text-[11px] text-emerald-300">
+                                Action: {d.suggestedAction}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Preconditions */}
+                  {plan.preconditions.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                        Execution Preconditions ({plan.preconditions.length})
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {plan.preconditions.map(p => (
+                          <div
+                            key={p.id}
+                            className="rounded border border-slate-800 bg-slate-950/40 p-2.5 text-xs flex items-start space-x-2"
+                          >
+                            <span className="rounded bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.5 text-[10px] font-mono shrink-0">
+                              {p.category}
+                            </span>
+                            <span className="text-slate-300">{p.description}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Executable Steps */}
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                      Compiled Executable Actions ({plan.steps.length})
+                    </h4>
+                    <div className="overflow-hidden rounded-lg border border-slate-800">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 text-[11px]">
+                          <tr>
+                            <th className="p-2.5 w-12 text-center">#</th>
+                            <th className="p-2.5 w-28">Action</th>
+                            <th className="p-2.5">Target Descriptor</th>
+                            <th className="p-2.5">Input Value / Secret Ptr</th>
+                            <th className="p-2.5">Step Assertions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800 bg-slate-900/60 font-mono">
+                          {plan.steps.map(s => (
+                            <tr key={s.id} className="hover:bg-slate-800/40 transition">
+                              <td className="p-2.5 text-center text-slate-500 font-bold">
+                                {s.sequence}
+                              </td>
+                              <td className="p-2.5">
+                                <span
+                                  className={`rounded px-2 py-0.5 text-[10px] font-bold border ${
+                                    s.action === 'NAVIGATE'
+                                      ? 'bg-purple-950 text-purple-300 border-purple-800'
+                                      : s.action === 'CLICK'
+                                        ? 'bg-blue-950 text-blue-300 border-blue-800'
+                                        : s.action === 'FILL'
+                                          ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
+                                          : s.action === 'SELECT'
+                                            ? 'bg-amber-950 text-amber-300 border-amber-800'
+                                            : s.action === 'CHECK' || s.action === 'UNCHECK'
+                                              ? 'bg-teal-950 text-teal-300 border-teal-800'
+                                              : s.action === 'UPLOAD'
+                                                ? 'bg-rose-950 text-rose-300 border-rose-800'
+                                                : 'bg-slate-800 text-slate-300 border-slate-700'
+                                  }`}
+                                >
+                                  {s.action}
+                                </span>
+                              </td>
+                              <td className="p-2.5 text-slate-200">
+                                {s.target ? (
+                                  <div className="space-y-0.5 text-[11px]">
+                                    <div className="font-sans font-medium text-slate-100">
+                                      {s.target.name || s.target.route || s.target.semanticHint}
+                                    </div>
+                                    <div className="text-[10px] text-slate-400">
+                                      kind: <span className="text-indigo-300">{s.target.kind}</span>
+                                      {s.target.role && (
+                                        <>
+                                          {' '}
+                                          | role:{' '}
+                                          <span className="text-cyan-300">{s.target.role}</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-500 italic">None</span>
+                                )}
+                              </td>
+                              <td className="p-2.5 text-slate-300">
+                                {s.value ? (
+                                  <div className="text-[11px]">
+                                    {s.value.kind === 'SECRET_REFERENCE' ? (
+                                      <span className="rounded bg-amber-950/80 px-1.5 py-0.5 text-amber-300 border border-amber-800/60 font-mono">
+                                        🔒 [SECRET: {s.value.keyName || s.value.secretRef}]
+                                      </span>
+                                    ) : s.value.kind === 'VARIABLE' ? (
+                                      <span className="text-sky-300">
+                                        &#123;&#123;{s.value.variableName}&#125;&#125;
+                                      </span>
+                                    ) : (
+                                      <span className="text-emerald-300">"{s.value.value}"</span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-600 italic">-</span>
+                                )}
+                              </td>
+                              <td className="p-2.5 text-slate-300">
+                                {s.assertions.length > 0 ? (
+                                  <div className="space-y-1 text-[10px]">
+                                    {s.assertions.map(a => (
+                                      <div
+                                        key={a.id}
+                                        className="rounded bg-slate-950 p-1 border border-slate-800 text-slate-300"
+                                      >
+                                        <span className="font-bold text-amber-300">{a.type}: </span>
+                                        <span>{a.description}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-600 italic">None</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* All Top-level Assertions */}
+                  {plan.assertions.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                        Verification Expectations ({plan.assertions.length})
+                      </h4>
+                      <div className="space-y-1.5">
+                        {plan.assertions.map(a => (
+                          <div
+                            key={a.id}
+                            className="rounded border border-slate-800 bg-slate-950/40 p-2.5 text-xs flex items-center justify-between"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <span className="rounded bg-amber-950 text-amber-300 border border-amber-800 px-1.5 py-0.5 text-[10px] font-mono">
+                                {a.type}
+                              </span>
+                              <span className="text-slate-200">{a.description}</span>
+                            </div>
+                            {a.stepSequence && (
+                              <span className="text-[10px] text-slate-500 font-mono">
+                                Step {a.stepSequence}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-8 text-center text-xs text-slate-400 space-y-3">
+                  <p>No executable plan has been compiled for this test case version yet.</p>
+                  <button
+                    onClick={() => handleCompilePlan(false)}
+                    disabled={isCompiling}
+                    className="rounded bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 transition"
+                  >
+                    ⚙ Compile Executable Plan
                   </button>
                 </div>
               )}

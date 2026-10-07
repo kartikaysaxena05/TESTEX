@@ -30,6 +30,7 @@ describe('RequirementDocumentExtractionService PostgreSQL Integration Tests', ()
   let storage: DocumentStorage;
   let docService: RequirementDocumentService;
   let extractionService: RequirementDocumentExtractionService;
+  const createdProjectIds: string[] = [];
 
   const prisma = getPrismaClient()!;
 
@@ -49,6 +50,15 @@ describe('RequirementDocumentExtractionService PostgreSQL Integration Tests', ()
   });
 
   after(async () => {
+    if (prisma && createdProjectIds.length > 0) {
+      try {
+        await prisma.project.deleteMany({
+          where: { id: { in: createdProjectIds } },
+        });
+      } catch {
+        // Ignore teardown errors
+      }
+    }
     if (tempDir && fs.existsSync(tempDir)) {
       await fs.promises.rm(tempDir, { recursive: true, force: true });
     }
@@ -60,6 +70,7 @@ describe('RequirementDocumentExtractionService PostgreSQL Integration Tests', ()
       name: `Extraction Integ Project ${Date.now()}`,
       description: 'Project for document extraction testing',
     });
+    createdProjectIds.push(project.id);
 
     // 2. Create markdown document fixture
     const fixturePath = path.join(tempDir, 'SRS_Spec.md');
@@ -136,6 +147,7 @@ describe('RequirementDocumentExtractionService PostgreSQL Integration Tests', ()
     const project = await projectRepo.createProject({
       name: `Tamper Test Project ${Date.now()}`,
     });
+    createdProjectIds.push(project.id);
 
     const fixturePath = path.join(tempDir, 'tamper_source.txt');
     await fs.promises.writeFile(fixturePath, 'Original un-tampered document text.', 'utf8');
@@ -168,6 +180,7 @@ describe('RequirementDocumentExtractionService PostgreSQL Integration Tests', ()
     const project = await projectRepo.createProject({
       name: `Missing File Project ${Date.now()}`,
     });
+    createdProjectIds.push(project.id);
 
     const fixturePath = path.join(tempDir, 'to_be_missing.txt');
     await fs.promises.writeFile(fixturePath, 'Will be missing on disk.', 'utf8');
@@ -197,6 +210,7 @@ describe('RequirementDocumentExtractionService PostgreSQL Integration Tests', ()
   it('should enforce project isolation and reject cross-project extraction', async () => {
     const projectA = await projectRepo.createProject({ name: 'Project A' });
     const projectB = await projectRepo.createProject({ name: 'Project B' });
+    createdProjectIds.push(projectA.id, projectB.id);
 
     const fixturePath = path.join(tempDir, 'project_a.txt');
     await fs.promises.writeFile(fixturePath, 'Project A text content.', 'utf8');
@@ -219,6 +233,7 @@ describe('RequirementDocumentExtractionService PostgreSQL Integration Tests', ()
 
   it('should reject extraction on an ARCHIVED project', async () => {
     const project = await projectRepo.createProject({ name: 'Project to Archive' });
+    createdProjectIds.push(project.id);
 
     const fixturePath = path.join(tempDir, 'archived_test.txt');
     await fs.promises.writeFile(fixturePath, 'Archived test text.', 'utf8');

@@ -8,8 +8,9 @@
     "build": "tsc -b ../../tsconfig.json && node scripts/build-preload.js && vite build",
     "dev": "node scripts/dev.js",
     "start": "electron .",
-    "smoke": "AI_QUALITY_ELECTRON_SMOKE=1 electron .",
-    "test": "node --test dist/main/security.test.js dist/main/protocol.test.js dist/main/ipc/sender-validation.test.js dist/main/ipc/ipc-handlers.test.js dist/main/ipc/database-handlers.test.js dist/main/ipc/project-handlers.test.js dist/main/ipc/logging-handlers.test.js dist/main/logging/error-handlers.test.js dist/preload/preload.test.js dist/main/navigation.test.js dist/main/ui-components.test.js dist/main/projects-ui.test.js dist/main/dashboard-ui.test.js dist/main/error-boundary-ui.test.js",
+    "smoke": "node scripts/smoke-launcher.js",
+    "test": "node --test dist/main/security.test.js dist/main/protocol.test.js dist/main/ipc/sender-validation.test.js dist/main/ipc/ipc-handlers.test.js dist/main/ipc/database-handlers.test.js dist/main/ipc/project-handlers.test.js dist/main/ipc/logging-handlers.test.js dist/main/logging/error-handlers.test.js dist/preload/preload.test.js dist/main/navigation.test.js dist/main/ui-components.test.js dist/main/projects-ui.test.js dist/main/dashboard-ui.test.js dist/main/error-boundary-ui.test.js dist/main/ipc/generation-handlers.test.js dist/main/local-generation-ui.test.js",
+    "test:phase118": "node --test dist/main/v8-phase118-project-lifecycle-certification.test.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -20,11 +21,13 @@
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
     "electron": "43.4.1",
     "esbuild": "^0.28.2",
+    "tailwindcss": "^4.3.3",
     "vite": "^8.2.2"
   }
 }

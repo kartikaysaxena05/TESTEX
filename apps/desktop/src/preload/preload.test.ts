@@ -47,8 +47,9 @@ describe('Preload Bridge Unit Tests', () => {
         },
         sources: {
           get: (id: string) => ipc.invoke('desktop:sources:get', id),
-          attachLocalDirectory: (id: string) =>
-            ipc.invoke('desktop:sources:attach-local-directory', id),
+          pickDirectory: () => ipc.invoke('desktop:sources:pick-directory'),
+          attachLocalDirectory: (id: string, directoryPath?: string) =>
+            ipc.invoke('desktop:sources:attach-local-directory', { projectId: id, directoryPath }),
           detach: (id: string) => ipc.invoke('desktop:sources:detach', id),
           validate: (id: string) => ipc.invoke('desktop:sources:validate', id),
           refreshMetadata: (id: string) => ipc.invoke('desktop:sources:refresh-metadata', id),
@@ -205,6 +206,184 @@ describe('Preload Bridge Unit Tests', () => {
           reportRendererError: (report: unknown) =>
             ipc.invoke('desktop:logging:report-renderer-error', report),
         },
+        ollama: {
+          getStatus: (input?: unknown) => ipc.invoke('desktop:ai:ollama:get-status', input),
+          healthCheck: (input?: unknown) => ipc.invoke('desktop:ai:ollama:health-check', input),
+          getConfig: (input?: unknown) => ipc.invoke('desktop:ai:ollama:get-config', input),
+          setConfig: (input: unknown) => ipc.invoke('desktop:ai:ollama:set-config', input),
+        },
+        aiModels: {
+          list: (input?: unknown) => ipc.invoke('desktop:ai:models:list', input),
+          refresh: (input?: unknown) => ipc.invoke('desktop:ai:models:refresh', input),
+          get: (input: unknown) => ipc.invoke('desktop:ai:models:get', input),
+          getCapabilities: (input: unknown) =>
+            ipc.invoke('desktop:ai:models:get-capabilities', input),
+          verifyCapabilities: (input: unknown) =>
+            ipc.invoke('desktop:ai:models:verify-capabilities', input),
+          select: (input: unknown) => ipc.invoke('desktop:ai:models:select', input),
+          getSelection: (input: unknown) => ipc.invoke('desktop:ai:models:get-selection', input),
+          resolveForTask: (input: unknown) =>
+            ipc.invoke('desktop:ai:models:resolve-for-task', input),
+        },
+        aiGeneration: {
+          generate: (input: unknown) => ipc.invoke('desktop:ai:generation:generate', input),
+          generateStream: (input: unknown, _onEvent: unknown) =>
+            ipc.invoke('desktop:ai:generation:stream', input),
+          cancel: (input: unknown) => ipc.invoke('desktop:ai:generation:cancel', input),
+          getStatus: (input: unknown) => ipc.invoke('desktop:ai:generation:get-status', input),
+          generateStructured: (input: unknown) =>
+            ipc.invoke('desktop:ai:structured:generate', input),
+          validateStructured: (input: unknown) =>
+            ipc.invoke('desktop:ai:structured:validate', input),
+          getStructuredCapabilities: (input: unknown) =>
+            ipc.invoke('desktop:ai:structured:get-capabilities', input),
+        },
+        aiTool: {
+          listTools: (input?: unknown) => ipc.invoke('desktop:ai:tool:list', input),
+          getTool: (input: unknown) => ipc.invoke('desktop:ai:tool:get', input),
+          parseCalls: (input: unknown) => ipc.invoke('desktop:ai:tool:parse-call', input),
+          validateCall: (input: unknown) => ipc.invoke('desktop:ai:tool:validate-call', input),
+          generateCalls: (input: unknown) => ipc.invoke('desktop:ai:tool:generate-calls', input),
+          getCapabilities: (input?: unknown) =>
+            ipc.invoke('desktop:ai:tool:get-capabilities', input),
+        },
+        aiContext: {
+          estimateTokens: (input: unknown) =>
+            ipc.invoke('desktop:ai:context:estimate-tokens', input),
+          calculateBudget: (input: unknown) =>
+            ipc.invoke('desktop:ai:context:calculate-budget', input),
+          optimizeSelection: (input: unknown) =>
+            ipc.invoke('desktop:ai:context:optimize-selection', input),
+          getCapabilities: (input: unknown) =>
+            ipc.invoke('desktop:ai:context:get-capabilities', input),
+        },
+        aiPrivacy: {
+          getSettings: (input?: unknown) => ipc.invoke('desktop:ai:privacy:get-settings', input),
+          updateSettings: (input: unknown) =>
+            ipc.invoke('desktop:ai:privacy:update-settings', input),
+          checkFirewall: (input: unknown) => ipc.invoke('desktop:ai:privacy:check-firewall', input),
+        },
+        aiRouter: {
+          getFallbackSettings: (input?: unknown) =>
+            ipc.invoke('desktop:ai:fallback:get-policy', input),
+          updateFallbackSettings: (input: unknown) =>
+            ipc.invoke('desktop:ai:fallback:set-policy', input),
+          listProviders: (input?: unknown) => ipc.invoke('desktop:ai:providers:list', input),
+          getProviderStatus: (input: unknown) => ipc.invoke('desktop:ai:providers:status', input),
+          selectProvider: (input: unknown) => ipc.invoke('desktop:ai:providers:select', input),
+        },
+        aiLifecycle: {
+          getActiveRequests: (projectId?: string | null) =>
+            ipc.invoke('desktop:ai:lifecycle:get-active', { projectId }),
+          getMetrics: () => ipc.invoke('desktop:ai:lifecycle:get-metrics'),
+          recoverInterrupted: (input?: unknown) =>
+            ipc.invoke('desktop:ai:lifecycle:recover-interrupted', input),
+        },
+        agentRuntime: {
+          createTask: (input: unknown) => ipc.invoke('desktop:agent:runtime:task:create', input),
+          getTask: (input: unknown) => ipc.invoke('desktop:agent:runtime:task:get', input),
+          cancelTask: (input: unknown) => ipc.invoke('desktop:agent:runtime:task:cancel', input),
+          getTaskEvents: (input: unknown) =>
+            ipc.invoke('desktop:agent:runtime:task:get-events', input),
+        },
+        agentThread: {
+          createThread: (input: unknown) => ipc.invoke('desktop:agent:thread:create', input),
+          listThreads: (input: unknown) => ipc.invoke('desktop:agent:thread:list', input),
+          getThread: (input: unknown) => ipc.invoke('desktop:agent:thread:get', input),
+          archiveThread: (input: unknown) => ipc.invoke('desktop:agent:thread:archive', input),
+          createTask: (input: unknown) => ipc.invoke('desktop:agent:thread:task:create', input),
+          getTask: (input: unknown) => ipc.invoke('desktop:agent:thread:task:get', input),
+          listTasks: (input: unknown) => ipc.invoke('desktop:agent:thread:task:list', input),
+          cancelTask: (input: unknown) => ipc.invoke('desktop:agent:thread:task:cancel', input),
+          retryTask: (input: unknown) => ipc.invoke('desktop:agent:thread:task:retry', input),
+          resumeTask: (input: unknown) => ipc.invoke('desktop:agent:thread:task:resume', input),
+          listMessages: (input: unknown) => ipc.invoke('desktop:agent:thread:message:list', input),
+          listExecutionSteps: (input: unknown) =>
+            ipc.invoke('desktop:agent:thread:step:list', input),
+          listToolCalls: (input: unknown) =>
+            ipc.invoke('desktop:agent:thread:tool-call:list', input),
+          executeAutonomousWorkflow: (input: unknown) =>
+            ipc.invoke('desktop:agent:workflow:execute', input),
+          getAutonomousWorkflowReport: (input: unknown) =>
+            ipc.invoke('desktop:agent:workflow:report:get', input),
+          approveWorkflowFix: (input: unknown) =>
+            ipc.invoke('desktop:agent:workflow:fix:approve', input),
+          rejectWorkflowFix: (input: unknown) =>
+            ipc.invoke('desktop:agent:workflow:fix:reject', input),
+        },
+        agentToolRegistry: {
+          listTools: (input: unknown) => ipc.invoke('desktop:agent:tool-registry:list', input),
+          getTool: (input: unknown) => ipc.invoke('desktop:agent:tool-registry:get', input),
+          invokeTool: (input: unknown) => ipc.invoke('desktop:agent:tool-registry:invoke', input),
+        },
+        agentToolPermissions: {
+          listApprovals: (input: unknown) => ipc.invoke('desktop:agent:tool-approvals:list', input),
+          getApproval: (input: unknown) => ipc.invoke('desktop:agent:tool-approvals:get', input),
+          decideApproval: (input: unknown) =>
+            ipc.invoke('desktop:agent:tool-approvals:decide', input),
+          listAuditLogs: (input: unknown) =>
+            ipc.invoke('desktop:agent:tool-audit-logs:list', input),
+        },
+        failures: {
+          createCase: (input: unknown) => ipc.invoke('desktop:failures:create-case', input),
+          ensureCase: (input: unknown) => ipc.invoke('desktop:failures:ensure-case', input),
+          getCase: (input: unknown) => ipc.invoke('desktop:failures:get-case', input),
+          listCases: (input: unknown) => ipc.invoke('desktop:failures:list-cases', input),
+          startAnalysis: (input: unknown) => ipc.invoke('desktop:failures:start-analysis', input),
+          completeAnalysis: (input: unknown) =>
+            ipc.invoke('desktop:failures:complete-analysis', input),
+          failAnalysis: (input: unknown) => ipc.invoke('desktop:failures:fail-analysis', input),
+          cancelAnalysis: (input: unknown) => ipc.invoke('desktop:failures:cancel-analysis', input),
+          markStale: (input: unknown) => ipc.invoke('desktop:failures:mark-stale', input),
+          listRuns: (input: unknown) => ipc.invoke('desktop:failures:list-runs', input),
+          listEvidenceReferences: (input: unknown) =>
+            ipc.invoke('desktop:failures:list-evidence-references', input),
+          ingestEvidence: (input: unknown) => ipc.invoke('desktop:failures:ingest-evidence', input),
+          getEvidencePackage: (input: unknown) =>
+            ipc.invoke('desktop:failures:get-evidence-package', input),
+          verifyEvidenceIntegrity: (input: unknown) =>
+            ipc.invoke('desktop:failures:verify-evidence-integrity', input),
+          getEvidenceArtifactContent: (input: unknown) =>
+            ipc.invoke('desktop:failures:get-evidence-artifact-content', input),
+          executeReproduction: (input: unknown) =>
+            ipc.invoke('desktop:failures:execute-reproduction', input),
+          getReproductionAttempts: (input: unknown) =>
+            ipc.invoke('desktop:failures:get-reproduction-attempts', input),
+          getReproducibilitySummary: (input: unknown) =>
+            ipc.invoke('desktop:failures:get-reproducibility-summary', input),
+          cancelReproduction: (input: unknown) =>
+            ipc.invoke('desktop:failures:cancel-reproduction', input),
+          classify: (input: unknown) => ipc.invoke('desktop:failures:classify', input),
+          getClassification: (input: unknown) =>
+            ipc.invoke('desktop:failures:get-classification', input),
+          reclassify: (input: unknown) => ipc.invoke('desktop:failures:reclassify', input),
+          listClassificationHistory: (input: unknown) =>
+            ipc.invoke('desktop:failures:list-classification-history', input),
+          evaluateDecisionIntegrity: (input: unknown) =>
+            ipc.invoke('desktop:failures:evaluate-decision-integrity', input),
+          getDecisionIntegrity: (input: unknown) =>
+            ipc.invoke('desktop:failures:get-decision-integrity', input),
+          recomputeDecisionIntegrity: (input: unknown) =>
+            ipc.invoke('desktop:failures:recompute-decision-integrity', input),
+          listDecisionIntegrityHistory: (input: unknown) =>
+            ipc.invoke('desktop:failures:list-decision-integrity-history', input),
+          analyzeFlakiness: (input: unknown) =>
+            ipc.invoke('desktop:failures:analyze-flakiness', input),
+          getFlakinessAnalysis: (input: unknown) =>
+            ipc.invoke('desktop:failures:get-flakiness-analysis', input),
+          reanalyzeFlakiness: (input: unknown) =>
+            ipc.invoke('desktop:failures:reanalyze-flakiness', input),
+          listFlakinessHistory: (input: unknown) =>
+            ipc.invoke('desktop:failures:list-flakiness-history', input),
+          separateFailureDomain: (input: unknown) =>
+            ipc.invoke('desktop:failures:separate-failure-domain', input),
+          getDomainSeparation: (input: unknown) =>
+            ipc.invoke('desktop:failures:get-domain-separation', input),
+          reevaluateDomainSeparation: (input: unknown) =>
+            ipc.invoke('desktop:failures:reevaluate-domain-separation', input),
+          listDomainSeparationHistory: (input: unknown) =>
+            ipc.invoke('desktop:failures:list-domain-separation-history', input),
+        },
       });
     };
 
@@ -235,6 +414,7 @@ describe('Preload Bridge Unit Tests', () => {
     // Source API
     const sourceApi = api['sources'] as Record<string, unknown>;
     assert.strictEqual(typeof sourceApi?.['get'], 'function');
+    assert.strictEqual(typeof sourceApi?.['pickDirectory'], 'function');
     assert.strictEqual(typeof sourceApi?.['attachLocalDirectory'], 'function');
     assert.strictEqual(typeof sourceApi?.['detach'], 'function');
     assert.strictEqual(typeof sourceApi?.['validate'], 'function');
@@ -372,5 +552,147 @@ describe('Preload Bridge Unit Tests', () => {
     // Logging
     const loggingApi = api['logging'] as Record<string, unknown>;
     assert.strictEqual(typeof loggingApi?.['reportRendererError'], 'function');
+
+    // Ollama Connection & Health Detection API (Phase 127)
+    const ollamaApi = api['ollama'] as Record<string, unknown>;
+    assert.strictEqual(typeof ollamaApi?.['getStatus'], 'function');
+    assert.strictEqual(typeof ollamaApi?.['healthCheck'], 'function');
+    assert.strictEqual(typeof ollamaApi?.['getConfig'], 'function');
+    assert.strictEqual(typeof ollamaApi?.['setConfig'], 'function');
+
+    // Installed Model Discovery & Capability/Selection API (Phase 128 & Phase 129)
+    const aiModelsApi = api['aiModels'] as Record<string, unknown>;
+    assert.strictEqual(typeof aiModelsApi?.['list'], 'function');
+    assert.strictEqual(typeof aiModelsApi?.['refresh'], 'function');
+    assert.strictEqual(typeof aiModelsApi?.['get'], 'function');
+    assert.strictEqual(typeof aiModelsApi?.['getCapabilities'], 'function');
+    assert.strictEqual(typeof aiModelsApi?.['verifyCapabilities'], 'function');
+    assert.strictEqual(typeof aiModelsApi?.['select'], 'function');
+    assert.strictEqual(typeof aiModelsApi?.['getSelection'], 'function');
+    assert.strictEqual(typeof aiModelsApi?.['resolveForTask'], 'function');
+
+    // AI Generation Runtime API (Phase 130, 131 & 132)
+    const aiGenApi = api['aiGeneration'] as Record<string, unknown>;
+    assert.strictEqual(typeof aiGenApi?.['generate'], 'function');
+    assert.strictEqual(typeof aiGenApi?.['generateStream'], 'function');
+    assert.strictEqual(typeof aiGenApi?.['cancel'], 'function');
+    assert.strictEqual(typeof aiGenApi?.['getStatus'], 'function');
+    assert.strictEqual(typeof aiGenApi?.['generateStructured'], 'function');
+    assert.strictEqual(typeof aiGenApi?.['validateStructured'], 'function');
+    assert.strictEqual(typeof aiGenApi?.['getStructuredCapabilities'], 'function');
+
+    // AI Tool-Calling Compatibility API (Phase 133)
+    const aiToolApi = api['aiTool'] as Record<string, unknown>;
+    assert.strictEqual(typeof aiToolApi?.['listTools'], 'function');
+    assert.strictEqual(typeof aiToolApi?.['getTool'], 'function');
+    assert.strictEqual(typeof aiToolApi?.['parseCalls'], 'function');
+    assert.strictEqual(typeof aiToolApi?.['validateCall'], 'function');
+    assert.strictEqual(typeof aiToolApi?.['generateCalls'], 'function');
+    assert.strictEqual(typeof aiToolApi?.['getCapabilities'], 'function');
+
+    // AI Context Window & Token Management API (Phase 134)
+    const aiContextApi = api['aiContext'] as Record<string, unknown>;
+    assert.strictEqual(typeof aiContextApi?.['estimateTokens'], 'function');
+    assert.strictEqual(typeof aiContextApi?.['calculateBudget'], 'function');
+    assert.strictEqual(typeof aiContextApi?.['optimizeSelection'], 'function');
+    assert.strictEqual(typeof aiContextApi?.['getCapabilities'], 'function');
+
+    // AI Privacy & Context Firewall API (Phase 137)
+    const aiPrivacyApi = api['aiPrivacy'] as Record<string, unknown>;
+    assert.strictEqual(typeof aiPrivacyApi?.['getSettings'], 'function');
+    assert.strictEqual(typeof aiPrivacyApi?.['updateSettings'], 'function');
+    assert.strictEqual(typeof aiPrivacyApi?.['checkFirewall'], 'function');
+
+    // AI Provider Switching & Fallback API (Phase 138)
+    const aiRouterApi = api['aiRouter'] as Record<string, unknown>;
+    assert.strictEqual(typeof aiRouterApi?.['getFallbackSettings'], 'function');
+    assert.strictEqual(typeof aiRouterApi?.['updateFallbackSettings'], 'function');
+    assert.strictEqual(typeof aiRouterApi?.['listProviders'], 'function');
+    assert.strictEqual(typeof aiRouterApi?.['getProviderStatus'], 'function');
+    assert.strictEqual(typeof aiRouterApi?.['selectProvider'], 'function');
+
+    // AI Runtime Performance, Cancellation & Recovery API (Phase 139)
+    const aiLifecycleApi = api['aiLifecycle'] as Record<string, unknown>;
+    assert.strictEqual(typeof aiLifecycleApi?.['getActiveRequests'], 'function');
+    assert.strictEqual(typeof aiLifecycleApi?.['getMetrics'], 'function');
+    assert.strictEqual(typeof aiLifecycleApi?.['recoverInterrupted'], 'function');
+
+    // Agent Runtime Foundation API (Phase 141)
+    const agentRuntimeApi = api['agentRuntime'] as Record<string, unknown>;
+    assert.strictEqual(typeof agentRuntimeApi?.['createTask'], 'function');
+    assert.strictEqual(typeof agentRuntimeApi?.['getTask'], 'function');
+    assert.strictEqual(typeof agentRuntimeApi?.['cancelTask'], 'function');
+    assert.strictEqual(typeof agentRuntimeApi?.['getTaskEvents'], 'function');
+
+    // Agent Thread & Task Model API (Phase 142)
+    const agentThreadApi = api['agentThread'] as Record<string, unknown>;
+    assert.strictEqual(typeof agentThreadApi?.['createThread'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['listThreads'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['getThread'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['archiveThread'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['createTask'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['getTask'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['listTasks'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['cancelTask'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['retryTask'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['resumeTask'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['listMessages'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['listExecutionSteps'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['listToolCalls'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['executeAutonomousWorkflow'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['getAutonomousWorkflowReport'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['approveWorkflowFix'], 'function');
+    assert.strictEqual(typeof agentThreadApi?.['rejectWorkflowFix'], 'function');
+
+    // Agent Tool Registry API (Phase 143)
+    const agentToolRegistryApi = api['agentToolRegistry'] as Record<string, unknown>;
+    assert.strictEqual(typeof agentToolRegistryApi?.['listTools'], 'function');
+    assert.strictEqual(typeof agentToolRegistryApi?.['getTool'], 'function');
+    assert.strictEqual(typeof agentToolRegistryApi?.['invokeTool'], 'function');
+
+    // Agent Tool Permissions API (Phase 144)
+    const agentToolPermissionsApi = api['agentToolPermissions'] as Record<string, unknown>;
+    assert.strictEqual(typeof agentToolPermissionsApi?.['listApprovals'], 'function');
+    assert.strictEqual(typeof agentToolPermissionsApi?.['getApproval'], 'function');
+    assert.strictEqual(typeof agentToolPermissionsApi?.['decideApproval'], 'function');
+    assert.strictEqual(typeof agentToolPermissionsApi?.['listAuditLogs'], 'function');
+
+    // Failure Intelligence API (Phase 74)
+    const failuresApi = api['failures'] as Record<string, unknown>;
+    assert.strictEqual(typeof failuresApi?.['createCase'], 'function');
+    assert.strictEqual(typeof failuresApi?.['ensureCase'], 'function');
+    assert.strictEqual(typeof failuresApi?.['getCase'], 'function');
+    assert.strictEqual(typeof failuresApi?.['listCases'], 'function');
+    assert.strictEqual(typeof failuresApi?.['startAnalysis'], 'function');
+    assert.strictEqual(typeof failuresApi?.['completeAnalysis'], 'function');
+    assert.strictEqual(typeof failuresApi?.['failAnalysis'], 'function');
+    assert.strictEqual(typeof failuresApi?.['cancelAnalysis'], 'function');
+    assert.strictEqual(typeof failuresApi?.['markStale'], 'function');
+    assert.strictEqual(typeof failuresApi?.['listRuns'], 'function');
+    assert.strictEqual(typeof failuresApi?.['listEvidenceReferences'], 'function');
+    assert.strictEqual(typeof failuresApi?.['ingestEvidence'], 'function');
+    assert.strictEqual(typeof failuresApi?.['getEvidencePackage'], 'function');
+    assert.strictEqual(typeof failuresApi?.['verifyEvidenceIntegrity'], 'function');
+    assert.strictEqual(typeof failuresApi?.['getEvidenceArtifactContent'], 'function');
+    assert.strictEqual(typeof failuresApi?.['executeReproduction'], 'function');
+    assert.strictEqual(typeof failuresApi?.['getReproductionAttempts'], 'function');
+    assert.strictEqual(typeof failuresApi?.['getReproducibilitySummary'], 'function');
+    assert.strictEqual(typeof failuresApi?.['cancelReproduction'], 'function');
+    assert.strictEqual(typeof failuresApi?.['classify'], 'function');
+    assert.strictEqual(typeof failuresApi?.['getClassification'], 'function');
+    assert.strictEqual(typeof failuresApi?.['reclassify'], 'function');
+    assert.strictEqual(typeof failuresApi?.['listClassificationHistory'], 'function');
+    assert.strictEqual(typeof failuresApi?.['evaluateDecisionIntegrity'], 'function');
+    assert.strictEqual(typeof failuresApi?.['getDecisionIntegrity'], 'function');
+    assert.strictEqual(typeof failuresApi?.['recomputeDecisionIntegrity'], 'function');
+    assert.strictEqual(typeof failuresApi?.['listDecisionIntegrityHistory'], 'function');
+    assert.strictEqual(typeof failuresApi?.['analyzeFlakiness'], 'function');
+    assert.strictEqual(typeof failuresApi?.['getFlakinessAnalysis'], 'function');
+    assert.strictEqual(typeof failuresApi?.['reanalyzeFlakiness'], 'function');
+    assert.strictEqual(typeof failuresApi?.['listFlakinessHistory'], 'function');
+    assert.strictEqual(typeof failuresApi?.['separateFailureDomain'], 'function');
+    assert.strictEqual(typeof failuresApi?.['getDomainSeparation'], 'function');
+    assert.strictEqual(typeof failuresApi?.['reevaluateDomainSeparation'], 'function');
+    assert.strictEqual(typeof failuresApi?.['listDomainSeparationHistory'], 'function');
   });
 });

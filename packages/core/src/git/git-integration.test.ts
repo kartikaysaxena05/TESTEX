@@ -22,6 +22,7 @@ describe('ProjectGitMetadata Relational PostgreSQL Integration Tests', () => {
   let gitRepoDir: string;
   let emptyGitDir: string;
   let nonGitDir: string;
+  const createdProjectIds: string[] = [];
 
   before(async () => {
     const projectRepo = new ProjectRepository();
@@ -58,9 +59,9 @@ describe('ProjectGitMetadata Relational PostgreSQL Integration Tests', () => {
   after(async () => {
     try {
       const prisma = getPrismaClient();
-      if (prisma) {
+      if (prisma && createdProjectIds.length > 0) {
         await prisma.project.deleteMany({
-          where: { name: { startsWith: 'Git Integration Test Project' } },
+          where: { id: { in: createdProjectIds } },
         });
       }
       await closeDatabaseManager();
@@ -79,6 +80,7 @@ describe('ProjectGitMetadata Relational PostgreSQL Integration Tests', () => {
     const project = await projectService.createProject({
       name: 'Git Integration Test Project 1',
     });
+    createdProjectIds.push(project.id);
 
     const source = await sourceService.attachLocalDirectory(project.id, gitRepoDir);
     const gitStatus = await gitService.refreshGitMetadata(project.id);
@@ -106,6 +108,7 @@ describe('ProjectGitMetadata Relational PostgreSQL Integration Tests', () => {
     const project = await projectService.createProject({
       name: 'Git Integration Test Project Empty Repo',
     });
+    createdProjectIds.push(project.id);
 
     await sourceService.attachLocalDirectory(project.id, emptyGitDir);
     const gitStatus = await gitService.refreshGitMetadata(project.id);
@@ -120,6 +123,7 @@ describe('ProjectGitMetadata Relational PostgreSQL Integration Tests', () => {
     const project = await projectService.createProject({
       name: 'Git Integration Test Project Non-Git',
     });
+    createdProjectIds.push(project.id);
 
     const source = await sourceService.attachLocalDirectory(project.id, nonGitDir);
     const gitStatus = await gitService.refreshGitMetadata(project.id);
@@ -141,6 +145,7 @@ describe('ProjectGitMetadata Relational PostgreSQL Integration Tests', () => {
     const project = await projectService.createProject({
       name: 'Git Integration Test Project Detach',
     });
+    createdProjectIds.push(project.id);
 
     const source = await sourceService.attachLocalDirectory(project.id, gitRepoDir);
     await gitService.refreshGitMetadata(project.id);

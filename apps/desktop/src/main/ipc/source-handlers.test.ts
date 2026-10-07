@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import type { ProjectSourceDto } from '@ai-quality/contracts';
 import {
   handleGetSource,
+  handlePickDirectory,
   handleAttachLocalDirectory,
   handleDetachSource,
   handleValidateSource,
@@ -105,4 +106,24 @@ describe('Source IPC Handlers Unit Tests', () => {
     assert.strictEqual(result.availability, 'AVAILABLE');
     assert.strictEqual(result.identityFingerprint, sampleSourceDto.identityFingerprint);
   });
+
+  it('should handle pickDirectory when cancelled', async () => {
+    const mockCancelled = async () => ({ cancelled: true as const });
+    const result = await handlePickDirectory(mockCancelled);
+    assert.deepStrictEqual(result, { cancelled: true });
+  });
+
+  it('should handle pickDirectory when folder is selected', async () => {
+    const mockSelected = async () => ({
+      cancelled: false as const,
+      directoryPath: '/Users/test/my-project',
+    });
+    const result = await handlePickDirectory(mockSelected);
+    assert.deepStrictEqual(result, {
+      cancelled: false,
+      directoryPath: '/Users/test/my-project',
+      folderName: 'my-project',
+    });
+  });
 });
+

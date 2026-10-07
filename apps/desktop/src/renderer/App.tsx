@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react';
 import type { AppInfo } from '@ai-quality/contracts';
 import { AppRouter } from './navigation/AppRouter.js';
 import type { BridgeConnectionState } from './layout/TopBar.js';
+import { AuthProvider } from './context/AuthContext.js';
+import { PreferencesProvider } from './context/PreferencesContext.js';
 import { ProjectProvider } from './context/ProjectContext.js';
+import { WorkspaceProvider } from './context/WorkspaceContext.js';
 
 export function App() {
   const [bridgeState, setBridgeState] = useState<BridgeConnectionState>('loading');
@@ -63,9 +66,15 @@ export function App() {
       data-desktop-bridge={bridgeState === 'ready' ? 'ready' : 'not-ready'}
       data-app-shell="ready"
     >
-      <ProjectProvider>
-        <AppRouter bridgeState={bridgeState} appInfo={appInfo} />
-      </ProjectProvider>
+      <AuthProvider>
+        <PreferencesProvider>
+          <ProjectProvider>
+            <WorkspaceProvider>
+              <AppRouter bridgeState={bridgeState} appInfo={appInfo} />
+            </WorkspaceProvider>
+          </ProjectProvider>
+        </PreferencesProvider>
+      </AuthProvider>
     </div>
   );
 }

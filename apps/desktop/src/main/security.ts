@@ -106,9 +106,22 @@ export function applySecurityPolicies(
     callback(false);
   });
 
+  const routinePermissionProbes = new Set([
+    'media',
+    'geolocation',
+    'notifications',
+    'web-app-installation',
+    'clipboard-read',
+    'clipboard-sanitized-write',
+  ]);
+
   // 5. Session Permission Check Policy - Deny active permission checks
   sessionInstance.setPermissionCheckHandler((_webContents, permission) => {
-    getLogger().warn('security.denied_permission_check', { permission });
+    if (routinePermissionProbes.has(permission)) {
+      getLogger().debug('security.denied_permission_check', { permission });
+    } else {
+      getLogger().warn('security.denied_permission_check', { permission });
+    }
     return false;
   });
 }

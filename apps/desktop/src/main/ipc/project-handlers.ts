@@ -3,6 +3,7 @@
  * Privileged IPC handlers for Project and Environment management.
  */
 
+import type { IpcMainInvokeEvent } from 'electron';
 import { ProjectService, ProjectValidationError } from '@ai-quality/core';
 import {
   createProjectSchema,
@@ -13,11 +14,13 @@ import {
   deleteEnvironmentSchema,
   setDefaultEnvironmentSchema,
   projectIdSchema,
+  markProjectOpenedSchema,
   type ProjectSummary,
   type ProjectDetails,
   type ProjectEnvironmentDto,
 } from '@ai-quality/contracts';
 import { ZodError } from 'zod';
+import { assertAuthenticated } from './auth-handlers.js';
 
 let defaultProjectService: ProjectService | null = null;
 
@@ -30,6 +33,16 @@ export function getProjectService(): ProjectService {
 
 export function setProjectServiceForTest(service: ProjectService | null): void {
   defaultProjectService = service;
+}
+
+function isIpcEvent(val: unknown): val is IpcMainInvokeEvent {
+  return typeof val === 'object' && val !== null && 'senderFrame' in val;
+}
+
+async function extractUser(event?: IpcMainInvokeEvent): Promise<string | null> {
+  if (!event) return null;
+  const user = await assertAuthenticated(event);
+  return user.userId;
 }
 
 /**
@@ -47,80 +60,139 @@ export function handleProjectServiceError(error: unknown): never {
 }
 
 export async function handleListProjects(
-  rawInput?: unknown,
-  service: ProjectService = getProjectService(),
+  arg1?: unknown,
+  arg2?: unknown,
+  arg3?: ProjectService,
 ): Promise<readonly ProjectSummary[]> {
+  const event = isIpcEvent(arg1) ? arg1 : undefined;
+  const rawInput = isIpcEvent(arg1) ? arg2 : arg1;
+  const service = (isIpcEvent(arg1) ? arg3 : (arg2 as ProjectService | undefined)) ?? getProjectService();
+
+  const userId = await extractUser(event);
   const parseResult = listProjectsSchema.safeParse(rawInput);
   if (!parseResult.success) {
     handleProjectServiceError(parseResult.error);
   }
-  return service.listProjects(parseResult.data);
+  return service.listProjects(parseResult.data, userId);
 }
 
 export async function handleGetProject(
-  rawProjectId: unknown,
-  service: ProjectService = getProjectService(),
+  arg1?: unknown,
+  arg2?: unknown,
+  arg3?: ProjectService,
 ): Promise<ProjectDetails> {
+  const event = isIpcEvent(arg1) ? arg1 : undefined;
+  const rawProjectId = isIpcEvent(arg1) ? arg2 : arg1;
+  const service = (isIpcEvent(arg1) ? arg3 : (arg2 as ProjectService | undefined)) ?? getProjectService();
+
+  const userId = await extractUser(event);
   const parseResult = projectIdSchema.safeParse(rawProjectId);
   if (!parseResult.success) {
     handleProjectServiceError(parseResult.error);
   }
-  return service.getProject(parseResult.data);
+  return service.getProject(parseResult.data, userId);
 }
 
 export async function handleCreateProject(
-  rawInput: unknown,
-  service: ProjectService = getProjectService(),
+  arg1?: unknown,
+  arg2?: unknown,
+  arg3?: ProjectService,
 ): Promise<ProjectDetails> {
+  const event = isIpcEvent(arg1) ? arg1 : undefined;
+  const rawInput = isIpcEvent(arg1) ? arg2 : arg1;
+  const service = (isIpcEvent(arg1) ? arg3 : (arg2 as ProjectService | undefined)) ?? getProjectService();
+
+  const userId = await extractUser(event);
   const parseResult = createProjectSchema.safeParse(rawInput);
   if (!parseResult.success) {
     handleProjectServiceError(parseResult.error);
   }
-  return service.createProject(parseResult.data);
+  return service.createProject(parseResult.data, userId);
 }
 
 export async function handleUpdateProject(
-  rawInput: unknown,
-  service: ProjectService = getProjectService(),
+  arg1?: unknown,
+  arg2?: unknown,
+  arg3?: ProjectService,
 ): Promise<ProjectDetails> {
+  const event = isIpcEvent(arg1) ? arg1 : undefined;
+  const rawInput = isIpcEvent(arg1) ? arg2 : arg1;
+  const service = (isIpcEvent(arg1) ? arg3 : (arg2 as ProjectService | undefined)) ?? getProjectService();
+
+  const userId = await extractUser(event);
   const parseResult = updateProjectSchema.safeParse(rawInput);
   if (!parseResult.success) {
     handleProjectServiceError(parseResult.error);
   }
-  return service.updateProject(parseResult.data);
+  return service.updateProject(parseResult.data, userId);
 }
 
 export async function handleArchiveProject(
-  rawProjectId: unknown,
-  service: ProjectService = getProjectService(),
+  arg1?: unknown,
+  arg2?: unknown,
+  arg3?: ProjectService,
 ): Promise<ProjectDetails> {
+  const event = isIpcEvent(arg1) ? arg1 : undefined;
+  const rawProjectId = isIpcEvent(arg1) ? arg2 : arg1;
+  const service = (isIpcEvent(arg1) ? arg3 : (arg2 as ProjectService | undefined)) ?? getProjectService();
+
+  const userId = await extractUser(event);
   const parseResult = projectIdSchema.safeParse(rawProjectId);
   if (!parseResult.success) {
     handleProjectServiceError(parseResult.error);
   }
-  return service.archiveProject(parseResult.data);
+  return service.archiveProject(parseResult.data, userId);
 }
 
 export async function handleRestoreProject(
-  rawProjectId: unknown,
-  service: ProjectService = getProjectService(),
+  arg1?: unknown,
+  arg2?: unknown,
+  arg3?: ProjectService,
 ): Promise<ProjectDetails> {
+  const event = isIpcEvent(arg1) ? arg1 : undefined;
+  const rawProjectId = isIpcEvent(arg1) ? arg2 : arg1;
+  const service = (isIpcEvent(arg1) ? arg3 : (arg2 as ProjectService | undefined)) ?? getProjectService();
+
+  const userId = await extractUser(event);
   const parseResult = projectIdSchema.safeParse(rawProjectId);
   if (!parseResult.success) {
     handleProjectServiceError(parseResult.error);
   }
-  return service.restoreProject(parseResult.data);
+  return service.restoreProject(parseResult.data, userId);
 }
 
 export async function handleDeleteProject(
-  rawProjectId: unknown,
-  service: ProjectService = getProjectService(),
+  arg1?: unknown,
+  arg2?: unknown,
+  arg3?: ProjectService,
 ): Promise<{ readonly deleted: true }> {
+  const event = isIpcEvent(arg1) ? arg1 : undefined;
+  const rawProjectId = isIpcEvent(arg1) ? arg2 : arg1;
+  const service = (isIpcEvent(arg1) ? arg3 : (arg2 as ProjectService | undefined)) ?? getProjectService();
+
+  const userId = await extractUser(event);
   const parseResult = projectIdSchema.safeParse(rawProjectId);
   if (!parseResult.success) {
     handleProjectServiceError(parseResult.error);
   }
-  return service.deleteProject(parseResult.data);
+  return service.deleteProject(parseResult.data, userId);
+}
+
+export async function handleMarkProjectOpened(
+  arg1?: unknown,
+  arg2?: unknown,
+  arg3?: ProjectService,
+): Promise<{ readonly success: true }> {
+  const event = isIpcEvent(arg1) ? arg1 : undefined;
+  const rawInput = isIpcEvent(arg1) ? arg2 : arg1;
+  const service = (isIpcEvent(arg1) ? arg3 : (arg2 as ProjectService | undefined)) ?? getProjectService();
+
+  const userId = await extractUser(event);
+  const parseResult = markProjectOpenedSchema.safeParse(rawInput);
+  if (!parseResult.success) {
+    handleProjectServiceError(parseResult.error);
+  }
+  return service.markOpened(parseResult.data.projectId, userId);
 }
 
 export async function handleCreateEnvironment(

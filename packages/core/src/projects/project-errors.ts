@@ -42,9 +42,18 @@ export class ProjectConflictError extends ProjectError {
   }
 }
 
-export class EnvironmentNotFoundError extends ProjectError {
-  constructor(message = 'Environment not found.') {
-    super(message, 'ENVIRONMENT_NOT_FOUND');
-    this.name = 'EnvironmentNotFoundError';
+export class ProjectAccessDeniedError extends ProjectError {
+  constructor(message = 'Access denied to project.') {
+    super(message, 'ACCESS_DENIED');
+    this.name = 'ProjectAccessDeniedError';
   }
 }
+
+export class ProjectAlreadyDeletedError extends ProjectError {
+  constructor(message = 'Project has already been deleted.') {
+    super(message, 'PROJECT_ALREADY_DELETED');
+    this.name = 'ProjectAlreadyDeletedError';
+  }
+}
+
+export { EnvironmentNotFoundError } from '../environments/environment-errors.js';

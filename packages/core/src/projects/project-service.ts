@@ -9,6 +9,7 @@ import {
   ProjectArchivedError,
   ProjectValidationError,
   ProjectConflictError,
+  ProjectAccessDeniedError,
   EnvironmentNotFoundError,
 } from './project-errors.js';
 import {
@@ -27,11 +28,50 @@ import type {
   ProjectSummary,
   ProjectDetails,
   ProjectEnvironmentDto,
+  AuthAuditAction,
 } from '@ai-quality/contracts';
 import { getLogger } from '../logging/logger.js';
+import { getPrismaClient } from '../database/client.js';
+import { AuthAuditService } from '../auth/auth-audit-service.js';
 
 export class ProjectService {
   constructor(private readonly repository: ProjectRepository = new ProjectRepository()) {}
+
+  /**
+   * Enforces that the requesting user owns the target project.
+   */
+  private checkOwnership(project: { userId?: string | null }, userId?: string | null): void {
+    if (userId && project.userId && project.userId !== userId) {
+      throw new ProjectAccessDeniedError('Access denied: You do not own this project.');
+    }
+  }
+
+  /**
+   * Records project lifecycle events to the audit trail.
+   */
+  private recordAudit(
+    action: AuthAuditAction,
+    userId?: string | null,
+    metadata?: Record<string, unknown>,
+  ): void {
+    if (!userId) return;
+    try {
+      const prisma = getPrismaClient();
+      if (prisma) {
+        new AuthAuditService(prisma)
+          .recordEvent({
+            action,
+            userId,
+            metadata,
+          })
+          .catch(err => {
+            getLogger().warn('project.audit_failed', { action, error: String(err) });
+          });
+      }
+    } catch {
+      // Non-blocking audit record
+    }
+  }
 
   /**
    * Helper to validate and normalize URL inputs.
@@ -63,7 +103,10 @@ export class ProjectService {
   /**
    * Creates a new Project and its mandatory ProjectSettings record within a transaction.
    */
-  async createProject(input: CreateProjectInput): Promise<ProjectDetails> {
+  async createProject(
+    input: CreateProjectInput,
+    userId?: string | null,
+  ): Promise<ProjectDetails> {
     const name = input.name?.trim();
     if (!name || name.length === 0) {
       throw new ProjectValidationError('Project name is required.');
@@ -80,45 +123,67 @@ export class ProjectService {
     const project = await this.repository.createProject({
       name,
       description,
+      userId: userId ?? null,
+      isFavorite: input.isFavorite ?? false,
     });
 
-    getLogger().info('project.created', { projectId: project.id });
+    this.recordAudit('PROJECT_CREATED', userId, {
+      projectId: project.id,
+      name: project.name,
+    });
+
+    getLogger().info('project.created', { projectId: project.id, userId: userId ?? null });
     return mapProjectToDetails(project);
   }
 
   /**
-   * Lists projects with summary metadata, sorted by updatedAt descending.
+   * Lists projects with summary metadata, sorted deterministically, filtered by user and search.
    */
-  async listProjects(input?: ListProjectsInput): Promise<ProjectSummary[]> {
-    const status = input?.status ?? 'ACTIVE';
-    const projects = await this.repository.listProjects(status);
+  async listProjects(
+    input?: ListProjectsInput,
+    userId?: string | null,
+  ): Promise<ProjectSummary[]> {
+    const projects = await this.repository.listProjects({
+      status: input?.status ?? 'ACTIVE',
+      userId: userId ?? undefined,
+      search: input?.search,
+      sortBy: input?.sortBy,
+      sortDirection: input?.sortDirection,
+    });
     return projects.map(mapProjectToSummary);
   }
 
   /**
-   * Retrieves a single project by ID with its environments.
+   * Retrieves a single project by ID with its environments, verifying ownership.
    */
-  async getProject(projectId: string): Promise<ProjectDetails> {
+  async getProject(projectId: string, userId?: string | null): Promise<ProjectDetails> {
     if (!projectId || projectId.trim().length === 0) {
       throw new ProjectValidationError('Project ID is required.');
     }
 
     const project = await this.repository.getProjectById(projectId);
-    if (!project) {
+    if (!project || project.deletedAt !== null) {
       throw new ProjectNotFoundError();
     }
+
+    this.checkOwnership(project, userId);
 
     return mapProjectToDetails(project);
   }
 
   /**
-   * Updates an active project's name and description.
+   * Updates an active project's name, description, and favorite status.
    */
-  async updateProject(input: UpdateProjectInput): Promise<ProjectDetails> {
+  async updateProject(
+    input: UpdateProjectInput,
+    userId?: string | null,
+  ): Promise<ProjectDetails> {
     const project = await this.repository.getProjectById(input.projectId);
-    if (!project) {
+    if (!project || project.deletedAt !== null) {
       throw new ProjectNotFoundError();
     }
+
+    this.checkOwnership(project, userId);
 
     if (project.status === 'ARCHIVED') {
       throw new ProjectArchivedError(
@@ -126,15 +191,22 @@ export class ProjectService {
       );
     }
 
-    const name = input.name?.trim();
-    if (!name || name.length === 0) {
-      throw new ProjectValidationError('Project name is required.');
-    }
-    if (name.length > 120) {
-      throw new ProjectValidationError('Project name must be 120 characters or fewer.');
+    const name = input.name !== undefined ? input.name.trim() : undefined;
+    if (name !== undefined) {
+      if (name.length === 0) {
+        throw new ProjectValidationError('Project name is required.');
+      }
+      if (name.length > 120) {
+        throw new ProjectValidationError('Project name must be 120 characters or fewer.');
+      }
     }
 
-    const description = input.description?.trim() ? input.description.trim() : null;
+    const description =
+      input.description !== undefined
+        ? input.description?.trim()
+          ? input.description.trim()
+          : null
+        : undefined;
     if (description && description.length > 5000) {
       throw new ProjectValidationError('Project description must be 5000 characters or fewer.');
     }
@@ -142,7 +214,16 @@ export class ProjectService {
     const updated = await this.repository.updateProject(input.projectId, {
       name,
       description,
+      isFavorite: input.isFavorite,
     });
+
+    if (name && name !== project.name) {
+      this.recordAudit('PROJECT_RENAMED', userId, {
+        projectId: input.projectId,
+        oldName: project.name,
+        newName: name,
+      });
+    }
 
     getLogger().info('project.updated', { projectId: input.projectId });
     return mapProjectToDetails(updated);
@@ -151,17 +232,20 @@ export class ProjectService {
   /**
    * Archives an active project.
    */
-  async archiveProject(projectId: string): Promise<ProjectDetails> {
+  async archiveProject(projectId: string, userId?: string | null): Promise<ProjectDetails> {
     const project = await this.repository.getProjectById(projectId);
-    if (!project) {
+    if (!project || project.deletedAt !== null) {
       throw new ProjectNotFoundError();
     }
+
+    this.checkOwnership(project, userId);
 
     if (project.status === 'ARCHIVED') {
       return mapProjectToDetails(project);
     }
 
     const updated = await this.repository.updateStatus(projectId, 'ARCHIVED');
+    this.recordAudit('PROJECT_ARCHIVED', userId, { projectId });
     getLogger().info('project.archived', { projectId });
     return mapProjectToDetails(updated);
   }
@@ -169,28 +253,62 @@ export class ProjectService {
   /**
    * Restores an archived project to active status.
    */
-  async restoreProject(projectId: string): Promise<ProjectDetails> {
+  async restoreProject(projectId: string, userId?: string | null): Promise<ProjectDetails> {
     const project = await this.repository.getProjectById(projectId);
-    if (!project) {
+    if (!project || project.deletedAt !== null) {
       throw new ProjectNotFoundError();
     }
+
+    this.checkOwnership(project, userId);
 
     if (project.status === 'ACTIVE') {
       return mapProjectToDetails(project);
     }
 
     const updated = await this.repository.updateStatus(projectId, 'ACTIVE');
+    this.recordAudit('PROJECT_RESTORED', userId, { projectId });
     getLogger().info('project.restored', { projectId });
     return mapProjectToDetails(updated);
   }
 
   /**
-   * Permanently deletes an archived project. Active projects cannot be deleted directly.
+   * Records project open recency timestamp.
    */
-  async deleteProject(projectId: string): Promise<{ deleted: true }> {
+  async markOpened(projectId: string, userId?: string | null): Promise<{ success: true }> {
+    if (!projectId || projectId.trim().length === 0) {
+      throw new ProjectValidationError('Project ID is required.');
+    }
+
+    const project = await this.repository.getProjectById(projectId);
+    if (!project || project.deletedAt !== null) {
+      throw new ProjectNotFoundError();
+    }
+
+    this.checkOwnership(project, userId);
+
+    await this.repository.markOpened(projectId);
+    getLogger().info('project.opened', { projectId, userId });
+    return { success: true };
+  }
+
+  /**
+   * Permanently deletes or soft-deletes an archived project. Active projects cannot be deleted directly.
+   */
+  async deleteProject(
+    projectId: string,
+    userId?: string | null,
+    options?: { soft?: boolean },
+  ): Promise<{ deleted: true }> {
     const project = await this.repository.getProjectById(projectId);
     if (!project) {
       throw new ProjectNotFoundError();
+    }
+
+    this.checkOwnership(project, userId);
+
+    if (project.deletedAt !== null) {
+      // Double delete is safe and idempotent
+      return { deleted: true };
     }
 
     if (project.status === 'ACTIVE') {
@@ -199,8 +317,14 @@ export class ProjectService {
       );
     }
 
-    await this.repository.deleteProject(projectId);
-    getLogger().info('project.deleted', { projectId });
+    if (options?.soft) {
+      await this.repository.softDelete(projectId);
+    } else {
+      await this.repository.deleteProject(projectId);
+    }
+
+    this.recordAudit('PROJECT_DELETED', userId, { projectId });
+    getLogger().info('project.deleted', { projectId, soft: options?.soft ?? false });
     return { deleted: true };
   }
 

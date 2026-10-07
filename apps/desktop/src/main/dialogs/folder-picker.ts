@@ -20,16 +20,20 @@ export async function showFolderPickerDialog(): Promise<FolderPickerResult> {
     throw new Error('Electron dialog API is unavailable.');
   }
 
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.focus();
+  }
+
   const result =
     mainWindow && !mainWindow.isDestroyed()
       ? await dialog.showOpenDialog(mainWindow, {
           title: 'Select Project Directory',
-          buttonLabel: 'Attach Project',
+          buttonLabel: 'Select Folder',
           properties: ['openDirectory', 'createDirectory'],
         })
       : await dialog.showOpenDialog({
           title: 'Select Project Directory',
-          buttonLabel: 'Attach Project',
+          buttonLabel: 'Select Folder',
           properties: ['openDirectory', 'createDirectory'],
         });
 

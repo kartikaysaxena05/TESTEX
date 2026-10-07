@@ -9,6 +9,7 @@ import {
   setupGlobalProcessErrorHandlers,
   setupWindowErrorDiagnostics,
 } from './logging/error-handlers.js';
+import { setupApplicationMenu } from './menu.js';
 
 const isSmokeTestMode =
   process.env['AI_QUALITY_ELECTRON_SMOKE'] === '1' || process.argv.includes('--smoke');
@@ -153,6 +154,9 @@ export function setupAppLifecycle(): void {
         arch: process.arch,
       });
 
+      // Set up native application menu (Edit, Copy, Paste, Select All, etc.)
+      setupApplicationMenu();
+
       // Register desktop IPC handlers
       registerIpcHandlers();
 
@@ -202,4 +206,15 @@ export function setupAppLifecycle(): void {
     });
     void flushLogger();
   });
+
+  // 7. Graceful Termination on OS Signals (SIGINT / SIGTERM)
+  const handleExitSignal = () => {
+    getLogger().info('application.shutdown_signal_received');
+    closeDatabaseManager().catch(() => {});
+    void flushLogger().finally(() => {
+      app.exit(0);
+    });
+  };
+  process.on('SIGINT', handleExitSignal);
+  process.on('SIGTERM', handleExitSignal);
 }

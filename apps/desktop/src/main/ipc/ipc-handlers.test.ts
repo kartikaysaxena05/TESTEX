@@ -36,6 +36,26 @@ describe('IPC Handlers and Error Sanitization Unit Tests', () => {
     });
   });
 
+  it('should not double-wrap handlers that already return a DesktopResult', async () => {
+    const mockEvent = {
+      senderFrame: {
+        url: 'app://renderer/index.html',
+        parent: null,
+      },
+    } as unknown as IpcMainInvokeEvent;
+
+    const safeHandler = createSafeIpcHandler(() => ({
+      ok: true as const,
+      data: { message: 'success' },
+    }));
+    const result = await safeHandler(mockEvent);
+
+    assert.deepStrictEqual(result, {
+      ok: true,
+      data: { message: 'success' },
+    });
+  });
+
   it('should reject unauthorized sender with UNAUTHORIZED_SENDER error code', async () => {
     const untrustedEvent = {
       senderFrame: {

@@ -1,6 +1,6 @@
 /**
  * @file apps/desktop/src/renderer/features/dashboard/ProjectHeader.tsx
- * Header component displaying selected project identity, status, and description.
+ * Header component displaying selected project identity, status, description, and direct actions.
  */
 
 import React from 'react';
@@ -11,9 +11,10 @@ import type { ProjectDetails } from '@ai-quality/contracts';
 
 export interface ProjectHeaderProps {
   readonly project: ProjectDetails;
+  readonly onRefresh?: () => void;
 }
 
-export function ProjectHeader({ project }: ProjectHeaderProps): React.JSX.Element {
+export function ProjectHeader({ project, onRefresh }: ProjectHeaderProps): React.JSX.Element {
   const navigate = useNavigate();
 
   return (
@@ -41,11 +42,51 @@ export function ProjectHeader({ project }: ProjectHeaderProps): React.JSX.Elemen
       </div>
 
       <div className="dashboard-header-actions">
+        {onRefresh ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRefresh}
+            title="Reload project telemetry"
+            aria-label="Refresh project telemetry"
+            data-testid="header-action-refresh"
+          >
+            Refresh
+          </Button>
+        ) : null}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/source')}
+          title="Inspect source code and repository structure"
+          data-testid="header-action-source"
+        >
+          Source Code
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/requirements')}
+          title="Manage and analyze software requirements"
+          data-testid="header-action-requirements"
+        >
+          Requirements
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/test-cases')}
+          title="View test cases and generate automated tests"
+          data-testid="header-action-tests"
+        >
+          Test Cases
+        </Button>
         <Button
           variant="secondary"
           size="sm"
           onClick={() => navigate('/projects')}
           title="Open project configuration and environments in Projects screen"
+          data-testid="header-action-manage"
         >
           Manage Project
         </Button>

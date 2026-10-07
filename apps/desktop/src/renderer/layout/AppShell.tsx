@@ -1,8 +1,6 @@
 import type { AppInfo } from '@ai-quality/contracts';
-import { Sidebar } from './Sidebar.js';
-import { TopBar, type BridgeConnectionState } from './TopBar.js';
-import { Workspace } from './Workspace.js';
-import { StatusBar } from './StatusBar.js';
+import type { BridgeConnectionState } from './TopBar.js';
+import { CodexShell } from '../features/shell/CodexShell.js';
 
 interface AppShellProps {
   bridgeState: BridgeConnectionState;
@@ -10,16 +8,6 @@ interface AppShellProps {
 }
 
 export function AppShell({ bridgeState, appInfo }: AppShellProps) {
-  return (
-    <div className="app-shell" data-testid="app-shell">
-      <div className="app-shell-body">
-        <Sidebar />
-        <div className="content-area">
-          <TopBar bridgeState={bridgeState} />
-          <Workspace />
-        </div>
-      </div>
-      <StatusBar bridgeState={bridgeState} appInfo={appInfo} />
-    </div>
-  );
+  return <CodexShell bridgeState={bridgeState} appInfo={appInfo} />;
 }
+

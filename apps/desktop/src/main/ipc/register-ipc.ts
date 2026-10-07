@@ -18,9 +18,11 @@ import {
   handleUpdateEnvironment,
   handleDeleteEnvironment,
   handleSetDefaultEnvironment,
+  handleMarkProjectOpened,
 } from './project-handlers.js';
 import {
   handleGetSource,
+  handlePickDirectory,
   handleAttachLocalDirectory,
   handleDetachSource,
   handleValidateSource,
@@ -226,6 +228,195 @@ import {
   handleRejectTestVersion,
 } from './test-review-handlers.js';
 import { handleReportRendererError } from './logging-handlers.js';
+import {
+  handleCreateAgentRuntimeTask,
+  handleGetAgentRuntimeTask,
+  handleCancelAgentRuntimeTask,
+  handleGetAgentRuntimeTaskEvents,
+} from './agent-runtime-handlers.js';
+import {
+  handleCreateAgentThread,
+  handleListAgentThreads,
+  handleGetAgentThread,
+  handleArchiveAgentThread,
+  handleCreateAgentThreadTask,
+  handleGetAgentThreadTask,
+  handleListAgentThreadTasks,
+  handleCancelAgentThreadTask,
+  handleRetryAgentThreadTask,
+  handleResumeAgentThreadTask,
+  handleStopAgentThreadTask,
+  handlePauseAgentThreadTask,
+  handleListAgentTaskControlAuditLogs,
+  handleListAgentThreadMessages,
+  handleListAgentExecutionSteps,
+  handleListAgentToolCalls,
+  handleGetTaskRecoveryState,
+  handleListRecoverableTasks,
+  handleListAgentTaskCheckpoints,
+  handleExecuteAutonomousWorkflow,
+  handleGetAutonomousWorkflowReport,
+  handleApproveWorkflowFix,
+  handleRejectWorkflowFix,
+} from './agent-thread-handlers.js';
+import {
+  handleListAgentTools,
+  handleGetAgentTool,
+  handleInvokeAgentTool,
+} from './agent-tool-handlers.js';
+import {
+  handleListToolApprovals,
+  handleGetToolApproval,
+  handleDecideToolApproval,
+  handleListToolAuditLogs,
+} from './agent-tool-permission-handlers.js';
+import {
+  handleProposeRepairPatch,
+  handleGetRepairPatch,
+  handleApproveRepairPatch,
+  handleRejectRepairPatch,
+  handleCancelRepairPatch,
+  handleApplyRepairPatch,
+} from './repair-patch-handlers.js';
+import {
+  handleGetGitWorkingStatus,
+  handleGetGitDiff,
+  handleCreateGitChangeReview,
+  handleGetGitChangeReview,
+  handleApproveGitChangeReview,
+  handleRejectGitChangeReview,
+} from './git-review-handlers.js';
+import {
+  handleExecuteTerminal,
+  handleGetTerminalExecution,
+  handleListTerminalExecutions,
+  handleApproveTerminalExecution,
+  handleRejectTerminalExecution,
+  handleCancelTerminalExecution,
+} from './terminal-handlers.js';
+import {
+  handlePlannerCreatePlan,
+  handlePlannerGetPlan,
+  handlePlannerListPlans,
+  handlePlannerGetActivePlan,
+  handlePlannerAddStep,
+  handlePlannerRemoveStep,
+  handlePlannerReorderSteps,
+  handlePlannerModifyStep,
+  handlePlannerSetStepStatus,
+  handlePlannerSetPlanStatus,
+} from './planner-handlers.js';
+import {
+  handleAgentLoopStart,
+  handleAgentLoopResume,
+  handleAgentLoopCancel,
+  handleAgentLoopGetStatus,
+} from './agent-loop-handlers.js';
+import {
+  handleSubscribeAgentActivity,
+  handleUnsubscribeAgentActivity,
+  handleGetAgentActivityTimeline,
+} from './agent-activity-handlers.js';
+import {
+  handleCreateApproval,
+  handleGetApproval,
+  handleListApprovals,
+  handleApproveApproval,
+  handleRejectApproval,
+  handleCancelApproval,
+  handleGetPendingApproval,
+  handleGetApprovalAuditHistory,
+} from './approval-handlers.js';
+import { registerFileReviewHandlers } from './file-review-handlers.js';
+import {
+  handleListWorkspaceSessions,
+  handleGetWorkspaceSession,
+  handleCreateWorkspaceSession,
+  handleUpdateWorkspaceSession,
+  handleDeleteWorkspaceSession,
+  handleGetShellLayout,
+  handleUpdateShellLayout,
+} from './workspace-session-handlers.js';
+import {
+  handleGetAuthState,
+  handleGetCurrentUser,
+  handleLogin,
+  handleSignup,
+  handleForgotPassword,
+  handleResetPassword,
+  handleLogout,
+  handleRevokeSession,
+  handleRevokeAllSessions,
+  handleSocialAuthStart,
+  handleSocialAuthCallback,
+  handleSocialAuthCancel,
+  handleSocialAuthGetProviders,
+} from './auth-handlers.js';
+import {
+  handleGetProfile,
+  handleUpdateProfile,
+  handleChangePassword,
+  handleGetAuthMethods,
+  handleGetSessions,
+  handleGetPreferences,
+  handleUpdatePreferences,
+  handleDeleteAccount,
+} from './settings-handlers.js';
+import {
+  handleCreateWebsiteTarget,
+  handleGetWebsiteTarget,
+  handleListWebsiteTargets,
+  handleUpdateWebsiteTarget,
+  handleDeleteWebsiteTarget,
+  handleSetActiveWebsiteTarget,
+  handleTestWebsiteTargetConnection,
+  handleConfirmWebsiteTargetAuth,
+  handleResolveWebsiteTargetSnapshot,
+} from './website-target-handlers.js';
+import {
+  handleListRepositoryConnections,
+  handleGetRepositoryConnection,
+  handleCreateRepositoryConnection,
+  handleUpdateRepositoryConnection,
+  handleDeleteRepositoryConnection,
+  handleSetActiveRepositoryConnection,
+  handleVerifyRepositoryConnection,
+  handleImportRepositoryConnection,
+  handleCancelRepositoryImport,
+  handleResolveRepositorySnapshot,
+  handleVerifyGitProviderAuth,
+  handleListGitProviderRepos,
+  handleListGitProviderBranches,
+} from './repository-connection-handlers.js';
+import {
+  handleConnectLocalFolder,
+  handleDisconnectLocalFolder,
+  handleValidateLocalFolder,
+  handleGetLocalFolder,
+  handleListProjectDirectory,
+  handleReadProjectFile,
+  handleSearchProjectFiles,
+  handleCheckProjectFileExists,
+  handleGetProjectFileMetadata,
+  handleDetectProjectGit,
+} from './local-folder-handlers.js';
+import {
+  handleGetTargetEnvironment,
+  handleListTargetEnvironments,
+  handleSaveTargetEnvironment,
+  handleDeleteTargetEnvironment,
+  handleSetActiveTargetEnvironment,
+  handleTestTargetConnection,
+  handleTestTargetAuth,
+  handleResolveTargetEnvironment,
+} from './target-env-handlers.js';
+import {
+  handleGetProjectContext,
+  handleDetectProjectSources,
+  handleRefreshProjectContext,
+  handleInvalidateProjectContext,
+  handleGetProjectContextStatus,
+} from './project-context-handlers.js';
 
 let isIpcRegistered = false;
 
@@ -384,6 +575,73 @@ const ALLOWED_ERROR_CODES: readonly DesktopErrorCode[] = [
   'TEST_REGENERATION_FAILED',
   'TEST_REVIEW_VALIDATION_FAILED',
   'INTERNAL_ERROR',
+  'AGENT_TIMEOUT',
+  'AGENT_CANCELLED',
+  'AGENT_INVALID_STATE',
+  'AGENT_MALFORMED_RESPONSE',
+  'AGENT_RUNTIME_ERROR',
+  'AGENT_UNAUTHORIZED_TOOL',
+  'AI_CROSS_PROJECT_ACCESS',
+  'AI_INVALID_REQUEST',
+  'WORKSPACE_SESSION_NOT_FOUND',
+  'WORKSPACE_SESSION_PROJECT_MISMATCH',
+  'WORKSPACE_SESSION_VALIDATION_ERROR',
+  'ACCOUNT_DISABLED',
+  'ACCOUNT_LOCKED',
+  'SESSION_EXPIRED',
+  'SESSION_REVOKED',
+  'SESSION_NOT_FOUND',
+  'INVALID_AUTH_INPUT',
+  'AUTHENTICATION_UNAVAILABLE',
+  'PASSWORD_POLICY_VIOLATION',
+  'USER_ALREADY_EXISTS',
+  'ACCOUNT_ALREADY_EXISTS',
+  'USER_NOT_FOUND',
+  'RESET_TOKEN_EXPIRED',
+  'RESET_TOKEN_INVALID',
+  'PASSWORD_MISMATCH',
+  'UNAUTHORIZED',
+  'SOCIAL_AUTH_CANCELLED',
+  'SOCIAL_AUTH_EXPIRED',
+  'SOCIAL_AUTH_STATE_INVALID',
+  'SOCIAL_AUTH_PROVIDER_MISMATCH',
+  'SOCIAL_AUTH_TOKEN_INVALID',
+  'SOCIAL_AUTH_ACCOUNT_CONFLICT',
+  'SOCIAL_AUTH_PROVIDER_UNAVAILABLE',
+  'SOCIAL_AUTH_NETWORK_ERROR',
+  'SOCIAL_AUTH_DUPLICATE_IDENTITY',
+  'PROFILE_UPDATE_FAILED',
+  'INVALID_DISPLAY_NAME',
+  'CURRENT_PASSWORD_INCORRECT',
+  'CANNOT_CHANGE_OAUTH_PASSWORD',
+  'PREFERENCE_UPDATE_FAILED',
+  'ACCOUNT_DELETION_FAILED',
+  'REPOSITORY_NOT_FOUND',
+  'REPOSITORY_ACCESS_DENIED',
+  'REPOSITORY_ALREADY_CONNECTED',
+  'REPOSITORY_IMPORT_FAILED',
+  'REPOSITORY_IMPORT_CANCELLED',
+  'REPOSITORY_IMPORT_TIMEOUT',
+  'REPOSITORY_PATH_TRAVERSAL',
+  'REPOSITORY_OVERSIZED',
+  'GIT_PROVIDER_AUTH_FAILED',
+  'LOCAL_FOLDER_NOT_FOUND',
+  'LOCAL_FOLDER_ACCESS_DENIED',
+  'LOCAL_FOLDER_NOT_CONFIGURED',
+  'LOCAL_FOLDER_PATH_TRAVERSAL',
+  'LOCAL_FOLDER_SYMLINK_ESCAPE',
+  'LOCAL_FOLDER_PERMISSION_DENIED',
+  'LOCAL_FOLDER_FILE_TOO_LARGE',
+  'LOCAL_FOLDER_FILE_NOT_FOUND',
+  'LOCAL_FOLDER_INVALID_PATH',
+  'TARGET_ENV_NOT_FOUND',
+  'TARGET_ENV_ACCESS_DENIED',
+  'TARGET_ENV_VALIDATION_ERROR',
+  'TARGET_ENV_UNREACHABLE',
+  'TARGET_ENV_AUTH_FAILED',
+  'TARGET_ENV_PROD_SAFETY_VIOLATION',
+  'PROJECT_CONTEXT_NOT_FOUND',
+  'PROJECT_CONTEXT_ACCESS_DENIED',
 ];
 
 /**
@@ -425,6 +683,15 @@ export function createSafeIpcHandler<T, A extends unknown[] = unknown[]>(
         requestId,
         durationMs,
       });
+
+      if (
+        data !== null &&
+        typeof data === 'object' &&
+        'ok' in data &&
+        typeof (data as { ok: unknown }).ok === 'boolean'
+      ) {
+        return data as DesktopResult<T>;
+      }
 
       return {
         ok: true,
@@ -512,7 +779,7 @@ export function registerIpcHandlers(): void {
     DESKTOP_CHANNELS.PROJECTS_LIST,
     createSafeIpcHandler(
       DESKTOP_CHANNELS.PROJECTS_LIST,
-      (_event: IpcMainInvokeEvent, input: unknown) => handleListProjects(input),
+      (event: IpcMainInvokeEvent, input: unknown) => handleListProjects(event, input),
     ),
   );
 
@@ -520,7 +787,7 @@ export function registerIpcHandlers(): void {
     DESKTOP_CHANNELS.PROJECTS_GET,
     createSafeIpcHandler(
       DESKTOP_CHANNELS.PROJECTS_GET,
-      (_event: IpcMainInvokeEvent, projectId: unknown) => handleGetProject(projectId),
+      (event: IpcMainInvokeEvent, projectId: unknown) => handleGetProject(event, projectId),
     ),
   );
 
@@ -528,7 +795,7 @@ export function registerIpcHandlers(): void {
     DESKTOP_CHANNELS.PROJECTS_CREATE,
     createSafeIpcHandler(
       DESKTOP_CHANNELS.PROJECTS_CREATE,
-      (_event: IpcMainInvokeEvent, input: unknown) => handleCreateProject(input),
+      (event: IpcMainInvokeEvent, input: unknown) => handleCreateProject(event, input),
     ),
   );
 
@@ -536,7 +803,7 @@ export function registerIpcHandlers(): void {
     DESKTOP_CHANNELS.PROJECTS_UPDATE,
     createSafeIpcHandler(
       DESKTOP_CHANNELS.PROJECTS_UPDATE,
-      (_event: IpcMainInvokeEvent, input: unknown) => handleUpdateProject(input),
+      (event: IpcMainInvokeEvent, input: unknown) => handleUpdateProject(event, input),
     ),
   );
 
@@ -544,7 +811,7 @@ export function registerIpcHandlers(): void {
     DESKTOP_CHANNELS.PROJECTS_ARCHIVE,
     createSafeIpcHandler(
       DESKTOP_CHANNELS.PROJECTS_ARCHIVE,
-      (_event: IpcMainInvokeEvent, projectId: unknown) => handleArchiveProject(projectId),
+      (event: IpcMainInvokeEvent, projectId: unknown) => handleArchiveProject(event, projectId),
     ),
   );
 
@@ -552,7 +819,7 @@ export function registerIpcHandlers(): void {
     DESKTOP_CHANNELS.PROJECTS_RESTORE,
     createSafeIpcHandler(
       DESKTOP_CHANNELS.PROJECTS_RESTORE,
-      (_event: IpcMainInvokeEvent, projectId: unknown) => handleRestoreProject(projectId),
+      (event: IpcMainInvokeEvent, projectId: unknown) => handleRestoreProject(event, projectId),
     ),
   );
 
@@ -560,7 +827,7 @@ export function registerIpcHandlers(): void {
     DESKTOP_CHANNELS.PROJECTS_DELETE,
     createSafeIpcHandler(
       DESKTOP_CHANNELS.PROJECTS_DELETE,
-      (_event: IpcMainInvokeEvent, projectId: unknown) => handleDeleteProject(projectId),
+      (event: IpcMainInvokeEvent, projectId: unknown) => handleDeleteProject(event, projectId),
     ),
   );
 
@@ -603,6 +870,14 @@ export function registerIpcHandlers(): void {
     createSafeIpcHandler(
       DESKTOP_CHANNELS.SOURCES_GET,
       (_event: IpcMainInvokeEvent, projectId: unknown) => handleGetSource(projectId),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.SOURCES_PICK_DIRECTORY,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.SOURCES_PICK_DIRECTORY,
+      (_event: IpcMainInvokeEvent) => handlePickDirectory(),
     ),
   );
 
@@ -1416,6 +1691,601 @@ export function registerIpcHandlers(): void {
     ),
   );
 
+  // Agent Runtime Foundation Handlers (V10 Phase 141)
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_RUNTIME_TASK_CREATE,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleCreateAgentRuntimeTask(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_RUNTIME_TASK_GET,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleGetAgentRuntimeTask(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_RUNTIME_TASK_CANCEL,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleCancelAgentRuntimeTask(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_RUNTIME_TASK_GET_EVENTS,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleGetAgentRuntimeTaskEvents(event, payload);
+    },
+  );
+
+  // Task / Conversation / Thread Model Handlers (V10 Phase 142)
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_CREATE,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleCreateAgentThread(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_LIST,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleListAgentThreads(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_GET,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleGetAgentThread(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_ARCHIVE,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleArchiveAgentThread(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_TASK_CREATE,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleCreateAgentThreadTask(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_TASK_GET,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleGetAgentThreadTask(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_TASK_LIST,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleListAgentThreadTasks(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_TASK_CANCEL,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleCancelAgentThreadTask(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_TASK_RETRY,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleRetryAgentThreadTask(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_TASK_RESUME,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleResumeAgentThreadTask(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_TASK_STOP,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleStopAgentThreadTask(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_TASK_PAUSE,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handlePauseAgentThreadTask(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_TASK_CONTROL_AUDIT_LOGS_LIST,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleListAgentTaskControlAuditLogs(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_TASK_GET_RECOVERY_STATE,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleGetTaskRecoveryState(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_TASK_LIST_RECOVERABLE,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleListRecoverableTasks(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_TASK_CHECKPOINTS_LIST,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleListAgentTaskCheckpoints(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_WORKFLOW_EXECUTE,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleExecuteAutonomousWorkflow(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_WORKFLOW_GET_REPORT,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleGetAutonomousWorkflowReport(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_WORKFLOW_APPROVE_FIX,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleApproveWorkflowFix(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_WORKFLOW_REJECT_FIX,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleRejectWorkflowFix(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_THREAD_MESSAGE_LIST,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleListAgentThreadMessages(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_EXECUTION_STEP_LIST,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleListAgentExecutionSteps(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_TOOL_CALL_LIST,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleListAgentToolCalls(event, payload);
+    },
+  );
+
+  // Tool Registry & Invocation Channels (V10 Phase 143)
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_TOOL_REGISTRY_LIST,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleListAgentTools(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_TOOL_REGISTRY_GET,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleGetAgentTool(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_TOOL_REGISTRY_INVOKE,
+    async (event: IpcMainInvokeEvent, payload: unknown) => {
+      return handleInvokeAgentTool(event, payload);
+    },
+  );
+
+  // Tool Permission & Approval Channels (V10 Phase 144)
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_TOOL_APPROVAL_LIST,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleListToolApprovals(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_TOOL_APPROVAL_GET,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetToolApproval(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_TOOL_APPROVAL_DECIDE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleDecideToolApproval(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_TOOL_AUDIT_LOG_LIST,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleListToolAuditLogs(event, payload);
+    },
+  );
+
+  // Repair / Patch Tool Channels (V10 Phase 149)
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPAIR_PATCH_PROPOSE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleProposeRepairPatch(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPAIR_PATCH_GET,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetRepairPatch(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPAIR_PATCH_APPROVE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleApproveRepairPatch(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPAIR_PATCH_REJECT,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleRejectRepairPatch(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPAIR_PATCH_CANCEL,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleCancelRepairPatch(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPAIR_PATCH_APPLY,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleApplyRepairPatch(event, payload);
+    },
+  );
+
+  // Git Diff & Change Review Channels (V10 Phase 150)
+  ipcMain.handle(
+    DESKTOP_CHANNELS.GIT_DIFF_GET_STATUS,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetGitWorkingStatus(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.GIT_DIFF_GET,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetGitDiff(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.GIT_CHANGE_REVIEW_CREATE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleCreateGitChangeReview(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.GIT_CHANGE_REVIEW_GET,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetGitChangeReview(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.GIT_CHANGE_REVIEW_APPROVE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleApproveGitChangeReview(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.GIT_CHANGE_REVIEW_REJECT,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleRejectGitChangeReview(event, payload);
+    },
+  );
+
+  // V10 Phase 151: Terminal Gateway Channels
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TERMINAL_EXECUTE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleExecuteTerminal(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TERMINAL_GET_EXECUTION,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetTerminalExecution(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TERMINAL_LIST_EXECUTIONS,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleListTerminalExecutions(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TERMINAL_APPROVE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleApproveTerminalExecution(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TERMINAL_REJECT,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleRejectTerminalExecution(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TERMINAL_CANCEL,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleCancelTerminalExecution(event, payload);
+    },
+  );
+
+  // V10 Phase 152: Multi-Step Planning Channels
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLANNER_CREATE_PLAN,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handlePlannerCreatePlan(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLANNER_GET_PLAN,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handlePlannerGetPlan(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLANNER_LIST_PLANS,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handlePlannerListPlans(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLANNER_GET_ACTIVE_PLAN,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handlePlannerGetActivePlan(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLANNER_ADD_STEP,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handlePlannerAddStep(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLANNER_REMOVE_STEP,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handlePlannerRemoveStep(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLANNER_REORDER_STEPS,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handlePlannerReorderSteps(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLANNER_MODIFY_STEP,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handlePlannerModifyStep(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLANNER_SET_STEP_STATUS,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handlePlannerSetStepStatus(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLANNER_SET_PLAN_STATUS,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handlePlannerSetPlanStatus(event, payload);
+    },
+  );
+
+  // Agent Execution Loop Channels (V10 Phase 153)
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_LOOP_START,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleAgentLoopStart(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_LOOP_RESUME,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleAgentLoopResume(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_LOOP_CANCEL,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleAgentLoopCancel(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_LOOP_GET_STATUS,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleAgentLoopGetStatus(event, payload);
+    },
+  );
+
+  // Streaming Activity / Tool Progress Channels (V10 Phase 154)
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_ACTIVITY_SUBSCRIBE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleSubscribeAgentActivity(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_ACTIVITY_UNSUBSCRIBE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleUnsubscribeAgentActivity(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_ACTIVITY_GET_TIMELINE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetAgentActivityTimeline(event, payload);
+    },
+  );
+
+  // V10 Phase 155 — Human Approval Gates Channels
+  ipcMain.handle(
+    DESKTOP_CHANNELS.APPROVAL_CREATE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleCreateApproval(event, payload);
+    },
+  );
+  ipcMain.handle(
+    'approval.create',
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleCreateApproval(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.APPROVAL_GET,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetApproval(event, payload);
+    },
+  );
+  ipcMain.handle(
+    'approval.get',
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetApproval(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.APPROVAL_LIST,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleListApprovals(event, payload);
+    },
+  );
+  ipcMain.handle(
+    'approval.list',
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleListApprovals(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.APPROVAL_APPROVE,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleApproveApproval(event, payload);
+    },
+  );
+  ipcMain.handle(
+    'approval.approve',
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleApproveApproval(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.APPROVAL_REJECT,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleRejectApproval(event, payload);
+    },
+  );
+  ipcMain.handle(
+    'approval.reject',
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleRejectApproval(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.APPROVAL_CANCEL,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleCancelApproval(event, payload);
+    },
+  );
+  ipcMain.handle(
+    'approval.cancel',
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleCancelApproval(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.APPROVAL_GET_PENDING,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetPendingApproval(event, payload);
+    },
+  );
+  ipcMain.handle(
+    'approval.getPending',
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetPendingApproval(event, payload);
+    },
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.APPROVAL_GET_AUDIT_HISTORY,
+    async (event: IpcMainInvokeEvent, payload: any) => {
+      return handleGetApprovalAuditHistory(event, payload);
+    },
+  );
+
+  // V10 Phase 156: File & Diff Review Workspace Handlers
+  registerFileReviewHandlers(ipcMain);
+
   // AI Configuration & Prompt Execution Channels (V4 Phase 44)
   ipcMain.handle(
     DESKTOP_CHANNELS.AI_CONFIG_GET_DEFAULTS,
@@ -1871,6 +2741,541 @@ export function registerIpcHandlers(): void {
     ),
   );
 
+  // V8 Phase 111 — Shell Layout & Workspace Sessions
+  ipcMain.handle(
+    DESKTOP_CHANNELS.SHELL_LAYOUT_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.SHELL_LAYOUT_GET,
+      () => handleGetShellLayout(),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.SHELL_LAYOUT_UPDATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.SHELL_LAYOUT_UPDATE,
+      (_event: IpcMainInvokeEvent, input: unknown) => handleUpdateShellLayout(input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WORKSPACE_SESSIONS_LIST,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WORKSPACE_SESSIONS_LIST,
+      (_event: IpcMainInvokeEvent, input: unknown) => handleListWorkspaceSessions(input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WORKSPACE_SESSIONS_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WORKSPACE_SESSIONS_GET,
+      (_event: IpcMainInvokeEvent, input: unknown) => handleGetWorkspaceSession(input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WORKSPACE_SESSIONS_CREATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WORKSPACE_SESSIONS_CREATE,
+      (_event: IpcMainInvokeEvent, input: unknown) => handleCreateWorkspaceSession(input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WORKSPACE_SESSIONS_UPDATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WORKSPACE_SESSIONS_UPDATE,
+      (_event: IpcMainInvokeEvent, input: unknown) => handleUpdateWorkspaceSession(input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WORKSPACE_SESSIONS_DELETE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WORKSPACE_SESSIONS_DELETE,
+      (_event: IpcMainInvokeEvent, input: unknown) => handleDeleteWorkspaceSession(input),
+    ),
+  );
+
+  // V8 Phase 113, 114, 115 — User Authentication & Social Authentication
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_GET_STATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_GET_STATE,
+      (event: IpcMainInvokeEvent) => handleGetAuthState(event),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_GET_CURRENT_USER,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_GET_CURRENT_USER,
+      (event: IpcMainInvokeEvent) => handleGetCurrentUser(event),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_LOGIN,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_LOGIN,
+      (event: IpcMainInvokeEvent, input: any) => handleLogin(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_SIGNUP,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_SIGNUP,
+      (event: IpcMainInvokeEvent, input: any) => handleSignup(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_FORGOT_PASSWORD,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_FORGOT_PASSWORD,
+      (event: IpcMainInvokeEvent, input: any) => handleForgotPassword(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_RESET_PASSWORD,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_RESET_PASSWORD,
+      (event: IpcMainInvokeEvent, input: any) => handleResetPassword(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_LOGOUT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_LOGOUT,
+      (event: IpcMainInvokeEvent) => handleLogout(event),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_REVOKE_SESSION,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_REVOKE_SESSION,
+      (event: IpcMainInvokeEvent, input: any) => handleRevokeSession(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_REVOKE_ALL_SESSIONS,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_REVOKE_ALL_SESSIONS,
+      (event: IpcMainInvokeEvent, input: any) => handleRevokeAllSessions(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_SOCIAL_START,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_SOCIAL_START,
+      (event: IpcMainInvokeEvent, input: any) => handleSocialAuthStart(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_SOCIAL_CALLBACK,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_SOCIAL_CALLBACK,
+      (event: IpcMainInvokeEvent, input: any) => handleSocialAuthCallback(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_SOCIAL_CANCEL,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_SOCIAL_CANCEL,
+      (event: IpcMainInvokeEvent, input: any) => handleSocialAuthCancel(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_SOCIAL_GET_PROVIDERS,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_SOCIAL_GET_PROVIDERS,
+      (event: IpcMainInvokeEvent) => handleSocialAuthGetProviders(event),
+    ),
+  );
+
+  // V8 Phase 116 — User Profile, Account Settings & Preferences
+  ipcMain.handle(
+    DESKTOP_CHANNELS.SETTINGS_GET_PROFILE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.SETTINGS_GET_PROFILE,
+      (event: IpcMainInvokeEvent) => handleGetProfile(event),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.SETTINGS_UPDATE_PROFILE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.SETTINGS_UPDATE_PROFILE,
+      (event: IpcMainInvokeEvent, input: any) => handleUpdateProfile(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.SETTINGS_CHANGE_PASSWORD,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.SETTINGS_CHANGE_PASSWORD,
+      (event: IpcMainInvokeEvent, input: any) => handleChangePassword(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.SETTINGS_GET_AUTH_METHODS,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.SETTINGS_GET_AUTH_METHODS,
+      (event: IpcMainInvokeEvent) => handleGetAuthMethods(event),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.SETTINGS_GET_SESSIONS,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.SETTINGS_GET_SESSIONS,
+      (event: IpcMainInvokeEvent) => handleGetSessions(event),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.SETTINGS_GET_PREFERENCES,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.SETTINGS_GET_PREFERENCES,
+      (event: IpcMainInvokeEvent) => handleGetPreferences(event),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.SETTINGS_UPDATE_PREFERENCES,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.SETTINGS_UPDATE_PREFERENCES,
+      (event: IpcMainInvokeEvent, input: any) => handleUpdatePreferences(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.SETTINGS_DELETE_ACCOUNT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.SETTINGS_DELETE_ACCOUNT,
+      (event: IpcMainInvokeEvent, input: any) => handleDeleteAccount(event, input),
+    ),
+  );
+
+  // V8 Phase 119 — Website Targets & Production Safety
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WEBSITE_TARGETS_CREATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WEBSITE_TARGETS_CREATE,
+      (event: IpcMainInvokeEvent, input: any) => handleCreateWebsiteTarget(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WEBSITE_TARGETS_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WEBSITE_TARGETS_GET,
+      (event: IpcMainInvokeEvent, input: any) => handleGetWebsiteTarget(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WEBSITE_TARGETS_LIST,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WEBSITE_TARGETS_LIST,
+      (event: IpcMainInvokeEvent, input: any) => handleListWebsiteTargets(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WEBSITE_TARGETS_UPDATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WEBSITE_TARGETS_UPDATE,
+      (event: IpcMainInvokeEvent, input: any) => handleUpdateWebsiteTarget(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WEBSITE_TARGETS_DELETE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WEBSITE_TARGETS_DELETE,
+      (event: IpcMainInvokeEvent, input: any) => handleDeleteWebsiteTarget(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WEBSITE_TARGETS_SET_ACTIVE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WEBSITE_TARGETS_SET_ACTIVE,
+      (event: IpcMainInvokeEvent, input: any) => handleSetActiveWebsiteTarget(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WEBSITE_TARGETS_TEST_CONNECTION,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WEBSITE_TARGETS_TEST_CONNECTION,
+      (event: IpcMainInvokeEvent, input: any) => handleTestWebsiteTargetConnection(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WEBSITE_TARGETS_CONFIRM_AUTH,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WEBSITE_TARGETS_CONFIRM_AUTH,
+      (event: IpcMainInvokeEvent, input: any) => handleConfirmWebsiteTargetAuth(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.WEBSITE_TARGETS_RESOLVE_SNAPSHOT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.WEBSITE_TARGETS_RESOLVE_SNAPSHOT,
+      (event: IpcMainInvokeEvent, input: any) => handleResolveWebsiteTargetSnapshot(event, input),
+    ),
+  );
+
+  // V8 Phase 120 — Repository Connections & Git Providers
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_LIST,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_LIST,
+      (event: IpcMainInvokeEvent, input: any) => handleListRepositoryConnections(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_GET,
+      (event: IpcMainInvokeEvent, input: any) => handleGetRepositoryConnection(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_CREATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_CREATE,
+      (event: IpcMainInvokeEvent, input: any) => handleCreateRepositoryConnection(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_UPDATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_UPDATE,
+      (event: IpcMainInvokeEvent, input: any) => handleUpdateRepositoryConnection(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_DELETE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_DELETE,
+      (event: IpcMainInvokeEvent, input: any) => handleDeleteRepositoryConnection(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_SET_ACTIVE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_SET_ACTIVE,
+      (event: IpcMainInvokeEvent, input: any) => handleSetActiveRepositoryConnection(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_VERIFY,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_VERIFY,
+      (event: IpcMainInvokeEvent, input: any) => handleVerifyRepositoryConnection(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_IMPORT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_IMPORT,
+      (event: IpcMainInvokeEvent, input: any) => handleImportRepositoryConnection(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_CANCEL_IMPORT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_CANCEL_IMPORT,
+      (event: IpcMainInvokeEvent, input: any) => handleCancelRepositoryImport(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_RESOLVE_SNAPSHOT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_RESOLVE_SNAPSHOT,
+      (event: IpcMainInvokeEvent, input: any) => handleResolveRepositorySnapshot(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_PROVIDER_VERIFY_AUTH,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_PROVIDER_VERIFY_AUTH,
+      (event: IpcMainInvokeEvent, input: any) => handleVerifyGitProviderAuth(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_PROVIDER_LIST_REPOS,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_PROVIDER_LIST_REPOS,
+      (event: IpcMainInvokeEvent, input: any) => handleListGitProviderRepos(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.REPOSITORY_PROVIDER_LIST_BRANCHES,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.REPOSITORY_PROVIDER_LIST_BRANCHES,
+      (event: IpcMainInvokeEvent, input: any) => handleListGitProviderBranches(event, input),
+    ),
+  );
+
+  // V8 Phase 121 — Local Folder Attachment & File Access
+  ipcMain.handle(
+    DESKTOP_CHANNELS.LOCAL_FOLDER_CONNECT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.LOCAL_FOLDER_CONNECT,
+      (event: IpcMainInvokeEvent, input: any) => handleConnectLocalFolder(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.LOCAL_FOLDER_DISCONNECT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.LOCAL_FOLDER_DISCONNECT,
+      (event: IpcMainInvokeEvent, input: any) => handleDisconnectLocalFolder(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.LOCAL_FOLDER_VALIDATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.LOCAL_FOLDER_VALIDATE,
+      (event: IpcMainInvokeEvent, input: any) => handleValidateLocalFolder(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.LOCAL_FOLDER_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.LOCAL_FOLDER_GET,
+      (event: IpcMainInvokeEvent, input: any) => handleGetLocalFolder(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.LOCAL_FOLDER_LIST_DIRECTORY,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.LOCAL_FOLDER_LIST_DIRECTORY,
+      (event: IpcMainInvokeEvent, input: any) => handleListProjectDirectory(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.LOCAL_FOLDER_READ_FILE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.LOCAL_FOLDER_READ_FILE,
+      (event: IpcMainInvokeEvent, input: any) => handleReadProjectFile(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.LOCAL_FOLDER_SEARCH,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.LOCAL_FOLDER_SEARCH,
+      (event: IpcMainInvokeEvent, input: any) => handleSearchProjectFiles(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.LOCAL_FOLDER_CHECK_EXISTS,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.LOCAL_FOLDER_CHECK_EXISTS,
+      (event: IpcMainInvokeEvent, input: any) => handleCheckProjectFileExists(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.LOCAL_FOLDER_GET_METADATA,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.LOCAL_FOLDER_GET_METADATA,
+      (event: IpcMainInvokeEvent, input: any) => handleGetProjectFileMetadata(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.LOCAL_FOLDER_DETECT_GIT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.LOCAL_FOLDER_DETECT_GIT,
+      (event: IpcMainInvokeEvent, input: any) => handleDetectProjectGit(event, input),
+    ),
+  );
+
+  // V8 Phase 122 — Target Environment Configuration
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TARGET_ENV_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TARGET_ENV_GET,
+      (event: IpcMainInvokeEvent, input: any) => handleGetTargetEnvironment(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TARGET_ENV_LIST,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TARGET_ENV_LIST,
+      (event: IpcMainInvokeEvent, input: any) => handleListTargetEnvironments(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TARGET_ENV_SAVE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TARGET_ENV_SAVE,
+      (event: IpcMainInvokeEvent, input: any) => handleSaveTargetEnvironment(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TARGET_ENV_DELETE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TARGET_ENV_DELETE,
+      (event: IpcMainInvokeEvent, input: any) => handleDeleteTargetEnvironment(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TARGET_ENV_SET_ACTIVE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TARGET_ENV_SET_ACTIVE,
+      (event: IpcMainInvokeEvent, input: any) => handleSetActiveTargetEnvironment(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TARGET_ENV_TEST_CONNECTION,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TARGET_ENV_TEST_CONNECTION,
+      (event: IpcMainInvokeEvent, input: any) => handleTestTargetConnection(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TARGET_ENV_TEST_AUTH,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TARGET_ENV_TEST_AUTH,
+      (event: IpcMainInvokeEvent, input: any) => handleTestTargetAuth(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TARGET_ENV_RESOLVE_TARGET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TARGET_ENV_RESOLVE_TARGET,
+      (event: IpcMainInvokeEvent, input: any) => handleResolveTargetEnvironment(event, input),
+    ),
+  );
+
+  // V8 Phase 123 — Project Context
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PROJECT_CONTEXT_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.PROJECT_CONTEXT_GET,
+      (event: IpcMainInvokeEvent, input: any) => handleGetProjectContext(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PROJECT_CONTEXT_DETECT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.PROJECT_CONTEXT_DETECT,
+      (event: IpcMainInvokeEvent, input: any) => handleDetectProjectSources(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PROJECT_CONTEXT_REFRESH,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.PROJECT_CONTEXT_REFRESH,
+      (event: IpcMainInvokeEvent, input: any) => handleRefreshProjectContext(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PROJECT_CONTEXT_INVALIDATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.PROJECT_CONTEXT_INVALIDATE,
+      (event: IpcMainInvokeEvent, input: any) => handleInvalidateProjectContext(event, input),
+    ),
+  );
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PROJECT_CONTEXT_STATUS,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.PROJECT_CONTEXT_STATUS,
+      (event: IpcMainInvokeEvent, input: any) => handleGetProjectContextStatus(event, input),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PROJECTS_MARK_OPENED,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.PROJECTS_MARK_OPENED,
+      (event: IpcMainInvokeEvent, projectId: any) => handleMarkProjectOpened(event, projectId),
+    ),
+  );
+
   isIpcRegistered = true;
 }
 
@@ -1899,6 +3304,7 @@ export function unregisterIpcHandlers(): void {
     ipcMain.removeHandler(DESKTOP_CHANNELS.PROJECTS_ENVIRONMENTS_DELETE);
     ipcMain.removeHandler(DESKTOP_CHANNELS.PROJECTS_ENVIRONMENTS_SET_DEFAULT);
     ipcMain.removeHandler(DESKTOP_CHANNELS.SOURCES_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.SOURCES_PICK_DIRECTORY);
     ipcMain.removeHandler(DESKTOP_CHANNELS.SOURCES_ATTACH_LOCAL_DIRECTORY);
     ipcMain.removeHandler(DESKTOP_CHANNELS.SOURCES_DETACH);
     ipcMain.removeHandler(DESKTOP_CHANNELS.SOURCES_VALIDATE);
@@ -2054,7 +3460,195 @@ export function unregisterIpcHandlers(): void {
     ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_REVIEW_GET_HISTORY);
     ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_REVIEW_COMPARE_VERSIONS);
     ipcMain.removeHandler(DESKTOP_CHANNELS.LOGGING_REPORT_RENDERER_ERROR);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_RUNTIME_TASK_CREATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_RUNTIME_TASK_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_RUNTIME_TASK_CANCEL);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_RUNTIME_TASK_GET_EVENTS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_CREATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_ARCHIVE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_TASK_CREATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_TASK_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_TASK_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_TASK_CANCEL);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_TASK_RETRY);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_TASK_RESUME);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_TASK_STOP);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_TASK_PAUSE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_TASK_CONTROL_AUDIT_LOGS_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_TASK_GET_RECOVERY_STATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_TASK_LIST_RECOVERABLE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_TASK_CHECKPOINTS_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_THREAD_MESSAGE_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_EXECUTION_STEP_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_TOOL_CALL_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_TOOL_REGISTRY_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_TOOL_REGISTRY_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_TOOL_REGISTRY_INVOKE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_TOOL_APPROVAL_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_TOOL_APPROVAL_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_TOOL_APPROVAL_DECIDE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_TOOL_AUDIT_LOG_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPAIR_PATCH_PROPOSE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPAIR_PATCH_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPAIR_PATCH_APPROVE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPAIR_PATCH_REJECT);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPAIR_PATCH_CANCEL);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPAIR_PATCH_APPLY);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.GIT_DIFF_GET_STATUS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.GIT_DIFF_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.GIT_CHANGE_REVIEW_CREATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.GIT_CHANGE_REVIEW_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.GIT_CHANGE_REVIEW_APPROVE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.GIT_CHANGE_REVIEW_REJECT);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TERMINAL_EXECUTE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TERMINAL_GET_EXECUTION);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TERMINAL_LIST_EXECUTIONS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TERMINAL_APPROVE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TERMINAL_REJECT);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TERMINAL_CANCEL);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLANNER_CREATE_PLAN);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLANNER_GET_PLAN);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLANNER_LIST_PLANS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLANNER_GET_ACTIVE_PLAN);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLANNER_ADD_STEP);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLANNER_REMOVE_STEP);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLANNER_REORDER_STEPS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLANNER_MODIFY_STEP);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLANNER_SET_STEP_STATUS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLANNER_SET_PLAN_STATUS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_LOOP_START);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_LOOP_RESUME);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_LOOP_CANCEL);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_LOOP_GET_STATUS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_ACTIVITY_SUBSCRIBE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_ACTIVITY_UNSUBSCRIBE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_ACTIVITY_GET_TIMELINE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.APPROVAL_CREATE);
+    ipcMain.removeHandler('approval.create');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.APPROVAL_GET);
+    ipcMain.removeHandler('approval.get');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.APPROVAL_LIST);
+    ipcMain.removeHandler('approval.list');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.APPROVAL_APPROVE);
+    ipcMain.removeHandler('approval.approve');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.APPROVAL_REJECT);
+    ipcMain.removeHandler('approval.reject');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.APPROVAL_CANCEL);
+    ipcMain.removeHandler('approval.cancel');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.APPROVAL_GET_PENDING);
+    ipcMain.removeHandler('approval.getPending');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.APPROVAL_GET_AUDIT_HISTORY);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.FILE_REVIEW_CREATE);
+    ipcMain.removeHandler('fileReview.create');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.FILE_REVIEW_GET);
+    ipcMain.removeHandler('fileReview.get');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.FILE_REVIEW_LIST);
+    ipcMain.removeHandler('fileReview.list');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.FILE_REVIEW_APPROVE);
+    ipcMain.removeHandler('fileReview.approve');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.FILE_REVIEW_REJECT);
+    ipcMain.removeHandler('fileReview.reject');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.FILE_REVIEW_CANCEL);
+    ipcMain.removeHandler('fileReview.cancel');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.FILE_REVIEW_APPLY);
+    ipcMain.removeHandler('fileReview.apply');
+    ipcMain.removeHandler(DESKTOP_CHANNELS.FILE_REVIEW_GET_FILE_CONTENT);
+    ipcMain.removeHandler('fileReview.getFileContent');
+
+    // V8 Phase 111 — Shell Layout & Workspace Sessions
+    ipcMain.removeHandler(DESKTOP_CHANNELS.SHELL_LAYOUT_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.SHELL_LAYOUT_UPDATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WORKSPACE_SESSIONS_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WORKSPACE_SESSIONS_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WORKSPACE_SESSIONS_CREATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WORKSPACE_SESSIONS_UPDATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WORKSPACE_SESSIONS_DELETE);
+
+    // V8 Phase 113, 114, 115 — User Authentication & Social Authentication
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_GET_STATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_GET_CURRENT_USER);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_LOGIN);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_SIGNUP);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_FORGOT_PASSWORD);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_RESET_PASSWORD);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_LOGOUT);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_REVOKE_SESSION);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_REVOKE_ALL_SESSIONS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_SOCIAL_START);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_SOCIAL_CALLBACK);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_SOCIAL_CANCEL);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_SOCIAL_GET_PROVIDERS);
+
+    // V8 Phase 116 — User Profile, Account Settings & Preferences
+    ipcMain.removeHandler(DESKTOP_CHANNELS.SETTINGS_GET_PROFILE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.SETTINGS_UPDATE_PROFILE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.SETTINGS_CHANGE_PASSWORD);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.SETTINGS_GET_AUTH_METHODS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.SETTINGS_GET_SESSIONS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.SETTINGS_GET_PREFERENCES);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.SETTINGS_UPDATE_PREFERENCES);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.SETTINGS_DELETE_ACCOUNT);
+
+    // V8 Phase 119 — Website Targets & Production Safety
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WEBSITE_TARGETS_CREATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WEBSITE_TARGETS_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WEBSITE_TARGETS_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WEBSITE_TARGETS_UPDATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WEBSITE_TARGETS_DELETE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WEBSITE_TARGETS_SET_ACTIVE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WEBSITE_TARGETS_TEST_CONNECTION);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WEBSITE_TARGETS_CONFIRM_AUTH);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.WEBSITE_TARGETS_RESOLVE_SNAPSHOT);
+
+    // V8 Phase 120 — Repository Connections & Git Providers
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_CREATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_UPDATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_DELETE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_SET_ACTIVE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_VERIFY);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_IMPORT);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_CANCEL_IMPORT);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_CONNECTIONS_RESOLVE_SNAPSHOT);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_PROVIDER_VERIFY_AUTH);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_PROVIDER_LIST_REPOS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.REPOSITORY_PROVIDER_LIST_BRANCHES);
+
+    // V8 Phase 121 — Local Folder Attachment & File Access
+    ipcMain.removeHandler(DESKTOP_CHANNELS.LOCAL_FOLDER_CONNECT);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.LOCAL_FOLDER_DISCONNECT);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.LOCAL_FOLDER_VALIDATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.LOCAL_FOLDER_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.LOCAL_FOLDER_LIST_DIRECTORY);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.LOCAL_FOLDER_READ_FILE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.LOCAL_FOLDER_SEARCH);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.LOCAL_FOLDER_CHECK_EXISTS);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.LOCAL_FOLDER_GET_METADATA);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.LOCAL_FOLDER_DETECT_GIT);
+
+    // V8 Phase 122 — Target Environment Configuration
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TARGET_ENV_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TARGET_ENV_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TARGET_ENV_SAVE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TARGET_ENV_DELETE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TARGET_ENV_SET_ACTIVE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TARGET_ENV_TEST_CONNECTION);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TARGET_ENV_TEST_AUTH);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TARGET_ENV_RESOLVE_TARGET);
+
+    // V8 Phase 123 — Project Context
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PROJECT_CONTEXT_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PROJECT_CONTEXT_DETECT);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PROJECT_CONTEXT_REFRESH);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PROJECT_CONTEXT_INVALIDATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PROJECT_CONTEXT_STATUS);
+
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PROJECTS_MARK_OPENED);
   }
 
   isIpcRegistered = false;
 }
+

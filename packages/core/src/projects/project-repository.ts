@@ -9,6 +9,14 @@ import type { EnvironmentType, ProjectStatus } from '@ai-quality/contracts';
 import { DatabaseError } from '../database/errors.js';
 import type { ProjectWithEnvironments } from './project-mappers.js';
 
+export interface ListProjectsFilter {
+  readonly status?: 'ACTIVE' | 'ARCHIVED' | 'ALL';
+  readonly userId?: string | null;
+  readonly search?: string;
+  readonly sortBy?: 'recent' | 'created' | 'name';
+  readonly sortDirection?: 'asc' | 'desc';
+}
+
 export class ProjectRepository {
   private getPrisma() {
     const prisma = getPrismaClient();
@@ -22,22 +30,66 @@ export class ProjectRepository {
   }
 
   /**
-   * Retrieves a list of projects with environments loaded, filtered by status.
+   * Retrieves a list of projects with environments loaded, filtered by status, user, and search.
    */
-  async listProjects(status?: 'ACTIVE' | 'ARCHIVED' | 'ALL'): Promise<ProjectWithEnvironments[]> {
+  async listProjects(
+    filter?: ListProjectsFilter | 'ACTIVE' | 'ARCHIVED' | 'ALL',
+  ): Promise<ProjectWithEnvironments[]> {
     const prisma = this.getPrisma();
-    const where: Prisma.ProjectWhereInput = {};
+    const opts: ListProjectsFilter =
+      typeof filter === 'string' ? { status: filter } : (filter ?? {});
+    const where: Prisma.ProjectWhereInput = {
+      deletedAt: null,
+    };
 
-    if (status === 'ACTIVE' || status === 'ARCHIVED') {
-      where.status = status;
+    if (opts.status === 'ACTIVE' || opts.status === 'ARCHIVED') {
+      where.status = opts.status;
+    }
+
+    if (opts.userId !== undefined && opts.userId !== null) {
+      where.userId = opts.userId;
+    }
+
+    if (opts.search && opts.search.trim().length > 0) {
+      const q = opts.search.trim();
+      where.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
+    const direction: Prisma.SortOrder = opts.sortDirection === 'asc' ? 'asc' : 'desc';
+    let orderBy: Prisma.ProjectOrderByWithRelationInput[];
+
+    if (opts.sortBy === 'name') {
+      orderBy = [{ isFavorite: 'desc' }, { name: opts.sortDirection === 'desc' ? 'desc' : 'asc' }];
+    } else if (opts.sortBy === 'created') {
+      orderBy = [{ isFavorite: 'desc' }, { createdAt: direction }];
+    } else if (opts.sortBy === 'recent') {
+      orderBy = [
+        { isFavorite: 'desc' },
+        { lastOpenedAt: { sort: direction, nulls: 'last' } },
+        { updatedAt: 'desc' },
+      ];
+    } else {
+      orderBy = [{ isFavorite: 'desc' }, { updatedAt: 'desc' }, { name: 'asc' }];
     }
 
     return prisma.project.findMany({
       where,
       include: {
         environments: true,
+        websiteTargets: {
+          where: { deletedAt: null },
+        },
+        repositoryConnections: {
+          where: { deletedAt: null },
+        },
+        source: {
+          include: { gitMetadata: true },
+        },
       },
-      orderBy: [{ updatedAt: 'desc' }, { name: 'asc' }],
+      orderBy,
     });
   }
 
@@ -52,6 +104,15 @@ export class ProjectRepository {
         environments: {
           orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
         },
+        websiteTargets: {
+          where: { deletedAt: null },
+        },
+        repositoryConnections: {
+          where: { deletedAt: null },
+        },
+        source: {
+          include: { gitMetadata: true },
+        },
       },
     });
   }
@@ -62,6 +123,8 @@ export class ProjectRepository {
   async createProject(data: {
     name: string;
     description?: string | null;
+    userId?: string | null;
+    isFavorite?: boolean;
   }): Promise<ProjectWithEnvironments> {
     const prisma = this.getPrisma();
 
@@ -70,6 +133,8 @@ export class ProjectRepository {
         data: {
           name: data.name,
           description: data.description,
+          userId: data.userId ?? null,
+          isFavorite: data.isFavorite ?? false,
           settings: {
             create: {},
           },
@@ -84,19 +149,20 @@ export class ProjectRepository {
   }
 
   /**
-   * Updates project metadata (name, description).
+   * Updates project metadata (name, description, isFavorite).
    */
   async updateProject(
     id: string,
-    data: { name: string; description?: string | null },
+    data: { name?: string; description?: string | null; isFavorite?: boolean },
   ): Promise<ProjectWithEnvironments> {
     const prisma = this.getPrisma();
 
     return prisma.project.update({
       where: { id },
       data: {
-        name: data.name,
-        description: data.description,
+        ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.description !== undefined ? { description: data.description } : {}),
+        ...(data.isFavorite !== undefined ? { isFavorite: data.isFavorite } : {}),
       },
       include: {
         environments: true,
@@ -105,14 +171,53 @@ export class ProjectRepository {
   }
 
   /**
-   * Updates project lifecycle status (ACTIVE, ARCHIVED).
+   * Updates project lifecycle status (ACTIVE, ARCHIVED) and maintains archivedAt timestamp.
    */
   async updateStatus(id: string, status: ProjectStatus): Promise<ProjectWithEnvironments> {
     const prisma = this.getPrisma();
 
     return prisma.project.update({
       where: { id },
-      data: { status },
+      data: {
+        status,
+        archivedAt: status === 'ARCHIVED' ? new Date() : null,
+      },
+      include: {
+        environments: true,
+      },
+    });
+  }
+
+  /**
+   * Updates lastOpenedAt recency timestamp.
+   */
+  async markOpened(id: string): Promise<ProjectWithEnvironments> {
+    const prisma = this.getPrisma();
+
+    return prisma.project.update({
+      where: { id },
+      data: {
+        lastOpenedAt: new Date(),
+      },
+      include: {
+        environments: true,
+      },
+    });
+  }
+
+  /**
+   * Safely soft-deletes a project by stamping deletedAt and archiving.
+   */
+  async softDelete(id: string): Promise<ProjectWithEnvironments> {
+    const prisma = this.getPrisma();
+
+    return prisma.project.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        status: 'ARCHIVED',
+        archivedAt: new Date(),
+      },
       include: {
         environments: true,
       },

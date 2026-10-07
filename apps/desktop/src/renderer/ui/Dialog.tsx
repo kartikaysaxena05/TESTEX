@@ -22,29 +22,46 @@ export function Dialog({
 }: DialogProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   // Focus trap / management & Escape handler
   useEffect(() => {
     if (open) {
       previousFocusRef.current = document.activeElement as HTMLElement | null;
-      // Focus modal content
-      contentRef.current?.focus();
+
+      // Smart focus: automatically focus the first interactive input or autofocus element ONLY if not already inside dialog
+      const focusTimer = setTimeout(() => {
+        if (!contentRef.current) return;
+        if (contentRef.current.contains(document.activeElement)) {
+          return;
+        }
+        const targetInput = contentRef.current.querySelector<HTMLElement>(
+          '[autofocus], input:not([disabled]):not([type="hidden"]), textarea:not([disabled])',
+        );
+        if (targetInput) {
+          targetInput.focus();
+        } else {
+          contentRef.current?.focus();
+        }
+      }, 50);
 
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
           e.stopPropagation();
-          onClose();
+          onCloseRef.current();
         }
       };
 
       document.addEventListener('keydown', handleKeyDown);
       return () => {
+        clearTimeout(focusTimer);
         document.removeEventListener('keydown', handleKeyDown);
       };
     } else if (previousFocusRef.current) {
       previousFocusRef.current.focus();
     }
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 

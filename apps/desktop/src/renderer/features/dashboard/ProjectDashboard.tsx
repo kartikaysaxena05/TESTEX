@@ -1,29 +1,37 @@
 /**
  * @file apps/desktop/src/renderer/features/dashboard/ProjectDashboard.tsx
- * Orchestrator component for the Project Dashboard.
+ * Orchestrator component for the SQE Platform Overview Dashboard.
+ * Supports both NO PROJECT SELECTED (getting-started dashboard) and PROJECT SELECTED (quality metrics & pipeline).
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelectedProjectDetails } from './useSelectedProjectDetails.js';
+import { GettingStartedPanel } from './GettingStartedPanel.js';
+import { PlatformHealthPanel } from './PlatformHealthPanel.js';
+import { RecentProjectsPanel } from './RecentProjectsPanel.js';
 import { ProjectHeader } from './ProjectHeader.js';
-import { ProjectSnapshot } from './ProjectSnapshot.js';
+import { ProjectQualityMetrics } from './ProjectQualityMetrics.js';
+import { QualityPipeline } from './QualityPipeline.js';
+import { NeedsAttentionPanel } from './NeedsAttentionPanel.js';
 import { EnvironmentOverview } from './EnvironmentOverview.js';
-import { QualityWorkspace } from './QualityWorkspace.js';
-import { EmptyState } from '../../ui/EmptyState.js';
+import { CreateProjectDialog } from '../../screens/projects/CreateProjectDialog.js';
+import { EmptyProjectSourceSelection } from '../projects/EmptyProjectSourceSelection.js';
 import { Alert } from '../../ui/Alert.js';
 import { Skeleton } from '../../ui/Skeleton.js';
 import { Button } from '../../ui/Button.js';
 
 export function ProjectDashboard(): React.JSX.Element {
   const navigate = useNavigate();
-  const { selectedProjectId, project, isLoading, error, dbStatus, refresh } =
+  const { selectedProjectId, project, qualityData, isLoading, error, dbStatus, refresh } =
     useSelectedProjectDetails();
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // 1. Database Connectivity Issues
   if (dbStatus === 'unavailable') {
     return (
-      <div style={{ padding: '8px 0' }} data-screen="overview">
+      <div className="overview-container" data-screen="overview">
         <Alert variant="danger" title="Database Unavailable">
           The PostgreSQL database is currently unreachable. Start your database server to view and
           manage project dashboards.
@@ -34,7 +42,7 @@ export function ProjectDashboard(): React.JSX.Element {
 
   if (dbStatus === 'not-configured') {
     return (
-      <div style={{ padding: '8px 0' }} data-screen="overview">
+      <div className="overview-container" data-screen="overview">
         <Alert variant="warning" title="Database Not Configured">
           DATABASE_URL is not configured in your environment. Configure a PostgreSQL connection
           string to persist and load projects.
@@ -43,36 +51,33 @@ export function ProjectDashboard(): React.JSX.Element {
     );
   }
 
-  // 2. No Selected Project State
+  // 2. STATE 1 — No Selected Project State (Getting Started Dashboard)
   if (!selectedProjectId) {
     return (
-      <EmptyState
-        screenId="overview"
-        title="No Project Selected"
-        description="Select a project from the sidebar selector or create a new project to inspect its quality engineering workspace."
-        action={
-          <Button variant="primary" onClick={() => navigate('/projects')}>
-            Go to Projects
-          </Button>
-        }
-        icon={
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect width="7" height="9" x="3" y="3" rx="1" />
-            <rect width="7" height="5" x="14" y="3" rx="1" />
-            <rect width="7" height="9" x="14" y="12" rx="1" />
-            <rect width="7" height="5" x="3" y="16" rx="1" />
-          </svg>
-        }
-      />
+      <div
+        className="overview-container no-project-overview"
+        data-testid="no-project-overview"
+        data-screen="overview"
+      >
+        {/* Top Grid: Getting Started (2/3) + Platform Health (1/3) */}
+        <div className="no-project-top-grid">
+          <GettingStartedPanel
+            onCreateProject={() => setIsCreateOpen(true)}
+            onBrowseProjects={() => navigate('/projects')}
+            dbDisabled={dbStatus !== 'connected'}
+          />
+          <PlatformHealthPanel />
+        </div>
+
+        {/* Lower Section: Recent Projects Panel */}
+        <RecentProjectsPanel
+          onCreateProject={() => setIsCreateOpen(true)}
+          dbDisabled={dbStatus !== 'connected'}
+        />
+
+        {/* Embedded Create Project Dialog */}
+        <CreateProjectDialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
+      </div>
     );
   }
 
@@ -80,7 +85,7 @@ export function ProjectDashboard(): React.JSX.Element {
   if (isLoading && !project) {
     return (
       <div
-        className="dashboard-skeleton-container"
+        className="overview-container dashboard-skeleton-container"
         data-testid="dashboard-loading-skeleton"
         data-screen="overview"
       >
@@ -92,28 +97,31 @@ export function ProjectDashboard(): React.JSX.Element {
           <Skeleton width={420} height={18} />
         </div>
 
-        {/* Snapshot Skeletons */}
-        <div className="dashboard-snapshot-grid">
-          <Skeleton height={80} />
-          <Skeleton height={80} />
-          <Skeleton height={80} />
-          <Skeleton height={80} />
+        {/* Metrics Grid Skeletons */}
+        <div className="dashboard-metrics-grid">
+          <Skeleton height={100} />
+          <Skeleton height={100} />
+          <Skeleton height={100} />
+          <Skeleton height={100} />
+          <Skeleton height={100} />
+        </div>
+
+        {/* Pipeline Skeleton */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <Skeleton width={180} height={22} />
+          <Skeleton height={110} />
+        </div>
+
+        {/* Needs Attention Skeleton */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <Skeleton width={200} height={22} />
+          <Skeleton height={90} />
         </div>
 
         {/* Environments Skeleton */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <Skeleton width={180} height={22} />
           <Skeleton height={120} />
-        </div>
-
-        {/* Quality Workspace Skeletons */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <Skeleton width={220} height={22} />
-          <div className="quality-workspace-grid">
-            <Skeleton height={140} />
-            <Skeleton height={140} />
-            <Skeleton height={140} />
-          </div>
         </div>
       </div>
     );
@@ -123,7 +131,8 @@ export function ProjectDashboard(): React.JSX.Element {
   if (error) {
     return (
       <div
-        style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '8px 0' }}
+        className="overview-container"
+        style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
         data-screen="overview"
       >
         <Alert variant="danger" title="Unable to Load Project Dashboard">
@@ -141,14 +150,52 @@ export function ProjectDashboard(): React.JSX.Element {
     );
   }
 
-  // 5. Loaded Project Dashboard State
+  // 5. STATE 2 — Loaded Project Dashboard State
   if (project) {
+    const hasSource = Boolean(
+      qualityData.source ||
+      (project.websiteTargets && project.websiteTargets.length > 0) ||
+      project.activeWebsiteTarget ||
+      project.sourceState === 'WEBSITE_CONFIGURED' ||
+      (project.repositoryConnections && project.repositoryConnections.length > 0) ||
+      project.activeRepositoryConnection ||
+      project.sourceState === 'REPOSITORY_CONFIGURED' ||
+      project.localFolder ||
+      project.sourceState === 'LOCAL_FOLDER_CONFIGURED' ||
+      project.sourceState === 'BOTH_CONFIGURED' ||
+      project.sourceState === 'MULTIPLE_CONFIGURED'
+    );
+
+    if (!hasSource) {
+      return (
+        <div
+          className="overview-container project-dashboard"
+          data-testid="project-dashboard"
+          data-screen="overview"
+        >
+          <ProjectHeader project={project} onRefresh={() => void refresh()} />
+          <EmptyProjectSourceSelection
+            project={project}
+            onWebsiteAdded={() => void refresh()}
+            onRepositoryConnected={() => void refresh()}
+            onLocalFolderConnected={() => void refresh()}
+            onTargetEnvironmentConfigured={() => void refresh()}
+          />
+        </div>
+      );
+    }
+
     return (
-      <div className="project-dashboard" data-testid="project-dashboard" data-screen="overview">
-        <ProjectHeader project={project} />
-        <ProjectSnapshot project={project} />
-        <EnvironmentOverview project={project} />
-        <QualityWorkspace />
+      <div
+        className="overview-container project-dashboard"
+        data-testid="project-dashboard"
+        data-screen="overview"
+      >
+        <ProjectHeader project={project} onRefresh={() => void refresh()} />
+        <ProjectQualityMetrics qualityData={qualityData} />
+        <QualityPipeline qualityData={qualityData} />
+        <NeedsAttentionPanel project={project} qualityData={qualityData} />
+        <EnvironmentOverview project={project} onRefresh={() => void refresh()} />
       </div>
     );
   }

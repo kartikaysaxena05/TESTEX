@@ -16,6 +16,8 @@ import { createTestDesignPromptDefinition } from './test-design/test-design-prom
 import { createScenarioGenerationPromptDefinition } from './scenarios/scenario-prompt-definition.js';
 import { createCategorizedTestPromptDefinition } from './categorized-tests/categorized-test-prompt-definition.js';
 import { createTestSpecificationPromptDefinition } from './specifications/specification-prompt-definition.js';
+import { createFailureAiClassificationPromptDefinition } from '../failures/ai-reasoning/ai-classification-prompt-definition.js';
+import { createFailureRootCauseAnalysisPromptDefinition } from '../failures/root-cause/root-cause-prompt-definition.js';
 
 export class PromptRegistry {
   // Map key: `${id}@${version}`
@@ -273,6 +275,12 @@ export class PromptRegistry {
 
     // 9. Phase 51: Test Specification Enrichment Prompt v1
     registry.register(createTestSpecificationPromptDefinition());
+
+    // 10. Phase 82: AI Failure Classification Prompt v1
+    registry.register(createFailureAiClassificationPromptDefinition());
+
+    // 11. Phase 83: Failure Root-Cause Analysis Prompt v1
+    registry.register(createFailureRootCauseAnalysisPromptDefinition());
 
     return registry;
   }

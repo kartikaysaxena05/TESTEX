@@ -1,15 +1,30 @@
+/**
+ * @file apps/desktop/src/main/dashboard-ui.test.tsx
+ * Comprehensive unit and rendering tests for the SQE Platform Overview Dashboard.
+ */
+
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import {
+  GettingStartedPanel,
+  PlatformHealthPanel,
+  RecentProjectsPanel,
   ProjectHeader,
-  ProjectSnapshot,
+  ProjectQualityMetrics,
+  QualityPipeline,
+  NeedsAttentionPanel,
   EnvironmentOverview,
-  QualityWorkspace,
+  ProjectDashboard,
+  type ProjectQualityData,
 } from '../renderer/features/dashboard/index.js';
-import { ProjectDashboard } from '../renderer/features/dashboard/ProjectDashboard.js';
+import {
+  formatCoveragePercentage,
+  getCoverageState,
+  getReviewState,
+} from '../renderer/features/dashboard/dashboard-metrics.js';
 import { ProjectProvider } from '../renderer/context/ProjectContext.js';
 import type { ProjectDetails } from '@ai-quality/contracts';
 
@@ -25,20 +40,54 @@ describe('Project Dashboard UI & State Unit Tests', () => {
       {
         id: 'env-1',
         projectId: '11111111-1111-1111-1111-111111111111',
+        targetApplicationId: null,
         name: 'Staging Server',
         type: 'STAGING',
         baseUrl: 'https://staging.garment.example.com',
         isDefault: true,
+        isEnabled: true,
+        isProduction: false,
+        productionSafetyPolicy: 'PROHIBITED',
+        browserEngine: 'chromium',
+        headless: true,
+        viewportWidth: 1280,
+        viewportHeight: 720,
+        locale: null,
+        timezoneId: null,
+        colorScheme: 'light',
+        ignoreHttpsErrors: false,
+        permissions: [],
+        extraHeaders: null,
+        variables: null,
+        secretReferences: null,
+        notes: null,
         createdAt: dummyDateStr,
         updatedAt: dummyDateStr,
       },
       {
         id: 'env-2',
         projectId: '11111111-1111-1111-1111-111111111111',
+        targetApplicationId: null,
         name: 'Local Dev',
         type: 'DEVELOPMENT',
         baseUrl: 'http://localhost:3000',
         isDefault: false,
+        isEnabled: true,
+        isProduction: false,
+        productionSafetyPolicy: 'PROHIBITED',
+        browserEngine: 'chromium',
+        headless: true,
+        viewportWidth: 1280,
+        viewportHeight: 720,
+        locale: null,
+        timezoneId: null,
+        colorScheme: 'light',
+        ignoreHttpsErrors: false,
+        permissions: [],
+        extraHeaders: null,
+        variables: null,
+        secretReferences: null,
+        notes: null,
         createdAt: dummyDateStr,
         updatedAt: dummyDateStr,
       },
@@ -57,8 +106,175 @@ describe('Project Dashboard UI & State Unit Tests', () => {
     updatedAt: dummyDateStr,
   };
 
-  describe('ProjectHeader Component', () => {
-    it('should render real project name, status badge, and description', () => {
+  const mockQualityDataFull: ProjectQualityData = {
+    requirementsSummary: {
+      totalCount: 18,
+      countsByStatus: {
+        DRAFT: 3,
+        ACTIVE: 15,
+        DEPRECATED: 0,
+        ARCHIVED: 0,
+      },
+      countsByType: {
+        FUNCTIONAL: 12,
+        NON_FUNCTIONAL: 4,
+        INTEGRATION: 2,
+        SECURITY: 0,
+        PERFORMANCE: 0,
+        BUSINESS_RULE: 0,
+        USABILITY: 0,
+        DATA: 0,
+        CONSTRAINT: 0,
+        UNKNOWN: 0,
+      },
+      countsByPriority: {
+        LOW: 2,
+        MEDIUM: 8,
+        HIGH: 6,
+        CRITICAL: 2,
+        UNSPECIFIED: 0,
+      },
+    },
+    testCasesTotal: 42,
+    coverageSummary: {
+      projectId: '11111111-1111-1111-1111-111111111111',
+      totalRequirements: 18,
+      eligibleRequirements: 15,
+      coveredCount: 13,
+      partiallyCoveredCount: 0,
+      uncoveredCount: 2,
+      notApplicableCount: 3,
+      unknownCount: 0,
+      overallCoveragePercentage: 86.66666666666667,
+      overallWithPartialPercentage: 86.66666666666667,
+      totalLinkedTests: 42,
+      currentValidTests: 39,
+      staleTests: 3,
+      orphanTests: 0,
+      dimensionSummaries: [],
+      topGaps: [],
+      lastEvaluatedAt: dummyDateStr,
+    },
+    source: {
+      id: 'src-1',
+      projectId: '11111111-1111-1111-1111-111111111111',
+      kind: 'LOCAL_DIRECTORY',
+      displayName: 'garment-erp',
+      rootPath: '/workspaces/garment-erp',
+      identityFingerprint: 'fp-1',
+      activeBaselineSnapshotId: null,
+      availability: 'AVAILABLE',
+      filesystemCreatedAt: dummyDateStr,
+      filesystemModifiedAt: dummyDateStr,
+      metadataRefreshedAt: dummyDateStr,
+      lastValidatedAt: dummyDateStr,
+      createdAt: dummyDateStr,
+      updatedAt: dummyDateStr,
+    },
+    indexStatus: {
+      isIndexed: true,
+      isRunning: false,
+      schemaVersion: 1,
+      parserVersion: 1,
+      summary: {
+        filesEligible: 140,
+        filesIndexed: 140,
+        filesSkipped: 0,
+        filesFailed: 0,
+        symbolsIndexed: 850,
+        importsIndexed: 150,
+        exportsIndexed: 100,
+        unsupportedLanguageFiles: 0,
+        durationMs: 125,
+        truncated: false,
+        warnings: [],
+      },
+      lastIndexedAt: dummyDateStr,
+    },
+    reviewQueueTotal: 2,
+    embeddingStatus: {
+      projectId: '11111111-1111-1111-1111-111111111111',
+      providerId: 'OPENAI',
+      model: 'text-embedding-3-small',
+      dimensions: 1536,
+      totalIndexed: 18,
+      totalStale: 0,
+      totalFailed: 0,
+      lastIndexedAt: dummyDateStr,
+    },
+  };
+
+  const mockQualityDataEmpty: ProjectQualityData = {
+    requirementsSummary: null,
+    testCasesTotal: null,
+    coverageSummary: null,
+    source: null,
+    indexStatus: null,
+    reviewQueueTotal: null,
+    embeddingStatus: null,
+  };
+
+  describe('STATE 1: GettingStartedPanel Component', () => {
+    it('should render 4-step workflow, title, description, and action CTAs', () => {
+      const html = renderToString(
+        <GettingStartedPanel onCreateProject={() => {}} onBrowseProjects={() => {}} />,
+      );
+
+      assert.ok(
+        html.includes('Start your quality engineering workspace'),
+        'Must render onboarding title',
+      );
+      assert.ok(
+        html.includes('Select an existing project or create a new one'),
+        'Must render description',
+      );
+      assert.ok(html.includes('Project'), 'Must render step 1');
+      assert.ok(html.includes('Repository'), 'Must render step 2');
+      assert.ok(html.includes('Requirements'), 'Must render step 3');
+      assert.ok(html.includes('AI Tests'), 'Must render step 4');
+      assert.ok(html.includes('Create Project'), 'Must render Create Project CTA');
+      assert.ok(html.includes('Browse Projects'), 'Must render Browse Projects CTA');
+    });
+  });
+
+  describe('STATE 1: PlatformHealthPanel Component', () => {
+    it('should render infrastructure services and settings navigation link', () => {
+      const html = renderToString(
+        <MemoryRouter>
+          <PlatformHealthPanel />
+        </MemoryRouter>,
+      );
+
+      assert.ok(html.includes('Platform Health'), 'Must render health panel title');
+      assert.ok(html.includes('PostgreSQL Database'), 'Must render postgres service');
+      assert.ok(html.includes('Vector Store (pgvector)'), 'Must render vector store service');
+      assert.ok(html.includes('AI Provider Gateway'), 'Must render AI provider gateway');
+      assert.ok(html.includes('RAG Retrieval Engine'), 'Must render RAG retrieval engine');
+      assert.ok(html.includes('Desktop Runtime'), 'Must render desktop runtime');
+      assert.ok(html.includes('View system settings'), 'Must render settings link');
+    });
+  });
+
+  describe('STATE 1: RecentProjectsPanel Component', () => {
+    it('should render empty state when project list is empty', () => {
+      const html = renderToString(
+        <MemoryRouter>
+          <ProjectProvider>
+            <RecentProjectsPanel onCreateProject={() => {}} />
+          </ProjectProvider>
+        </MemoryRouter>,
+      );
+
+      assert.ok(html.includes('Recent Projects'), 'Must render recent projects title');
+      assert.ok(
+        html.includes('No projects yet') || html.includes('Loading projects...'),
+        'Must render empty or loading state',
+      );
+    });
+  });
+
+  describe('STATE 2: ProjectHeader Component', () => {
+    it('should render real project name, status badge, description, and direct actions', () => {
       const html = renderToString(
         <MemoryRouter>
           <ProjectHeader project={mockProjectDetails} />
@@ -71,7 +287,10 @@ describe('Project Dashboard UI & State Unit Tests', () => {
         html.includes('Enterprise quality engineering workspace for textile logistics.'),
         'Must render real description',
       );
-      assert.ok(html.includes('Manage Project'), 'Must render Manage Project action button');
+      assert.ok(html.includes('Source Code'), 'Must render Source Code action');
+      assert.ok(html.includes('Requirements'), 'Must render Requirements action');
+      assert.ok(html.includes('Test Cases'), 'Must render Test Cases action');
+      assert.ok(html.includes('Manage Project'), 'Must render Manage Project action');
     });
 
     it('should render fallback when description is null without manufacturing copy', () => {
@@ -86,28 +305,202 @@ describe('Project Dashboard UI & State Unit Tests', () => {
     });
   });
 
-  describe('ProjectSnapshot Component', () => {
-    it('should render persisted project status, environment count, default environment, and timestamp', () => {
-      const html = renderToString(<ProjectSnapshot project={mockProjectDetails} />);
+  describe('STATE 2: ProjectQualityMetrics Component (Real Data Audit)', () => {
+    it('should render real metrics when data is available', () => {
+      const html = renderToString(
+        <MemoryRouter>
+          <ProjectQualityMetrics qualityData={mockQualityDataFull} />
+        </MemoryRouter>,
+      );
 
-      assert.ok(html.includes('Project Snapshot'), 'Must render snapshot section title');
-      assert.ok(html.includes('Lifecycle Status'), 'Must render status card');
-      assert.ok(html.includes('ACTIVE'), 'Must render ACTIVE status');
-      assert.ok(html.includes('2 configured'), 'Must render 2 configured environments count');
-      assert.ok(html.includes('Staging Server'), 'Must render default environment name');
-      assert.ok(html.includes('STAGING'), 'Must render default environment type');
-      assert.ok(html.includes('Last Updated'), 'Must render last updated label');
+      assert.ok(html.includes('Quality Metrics'), 'Must render section title');
+      assert.ok(html.includes('18'), 'Must render real requirement count');
+      assert.ok(html.includes('42'), 'Must render real test cases count');
+      assert.ok(html.includes('87%'), 'Must render rounded coverage percentage (86.66% -> 87%)');
+      assert.ok(html.includes('3 stale tests'), 'Must render stale tests count');
+      assert.ok(html.includes('Indexed'), 'Must render indexed repository status');
+      assert.ok(html.includes('140 files'), 'Must render total files count');
     });
 
-    it('should handle zero environments and no default environment gracefully', () => {
-      const html = renderToString(<ProjectSnapshot project={mockProjectNoEnvs} />);
+    it('should render honest "Not available" and "Not evaluated" fallbacks when data is absent without fake numbers', () => {
+      const html = renderToString(
+        <MemoryRouter>
+          <ProjectQualityMetrics qualityData={mockQualityDataEmpty} />
+        </MemoryRouter>,
+      );
 
-      assert.ok(html.includes('0 configured'), 'Must render 0 configured environments count');
-      assert.ok(html.includes('None configured'), 'Must indicate no default environment');
+      assert.ok(
+        html.includes('Not available'),
+        'Must render Not available badge for requirements/tests',
+      );
+      assert.ok(html.includes('Unable to load'), 'Must render Unable to load for coverage');
+      assert.ok(html.includes('Not Attached'), 'Must render Not Attached for repository');
+
+      // Verify no fabricated metrics
+      assert.strictEqual(html.includes('88.7%'), false, 'Must NOT render fake coverage percentage');
+      assert.strictEqual(html.includes('418'), false, 'Must NOT render fake test count');
+    });
+
+    it('should reject malformed coverage values without rendering NaN or Infinity', () => {
+      const malformed = {
+        ...mockQualityDataFull.coverageSummary!,
+        overallCoveragePercentage: Number.NaN,
+        coveredCount: Number.POSITIVE_INFINITY,
+      };
+      const malformedData: ProjectQualityData = {
+        ...mockQualityDataFull,
+        coverageSummary: malformed,
+        reviewQueueTotal: null,
+      };
+      const html = renderToString(
+        <MemoryRouter>
+          <ProjectQualityMetrics qualityData={malformedData} />
+        </MemoryRouter>,
+      );
+
+      assert.equal(getCoverageState(malformed), 'unknown');
+      assert.equal(getReviewState(malformed, null), 'unknown');
+      assert.equal(formatCoveragePercentage(malformed), 'Unable to load');
+      assert.equal(html.includes('NaN'), false);
+      assert.equal(html.includes('Infinity'), false);
+      assert.equal(html.includes('Clean'), false);
+      assert.ok(html.includes('Unable to load'));
+    });
+
+    it('should treat zero requirements as not applicable rather than 0% coverage', () => {
+      const emptySummary = {
+        ...mockQualityDataFull.coverageSummary!,
+        totalRequirements: 0,
+        eligibleRequirements: 0,
+        coveredCount: 0,
+        uncoveredCount: 0,
+        overallCoveragePercentage: null,
+        overallWithPartialPercentage: null,
+      };
+
+      assert.equal(getCoverageState(emptySummary), 'not-applicable');
+      assert.equal(formatCoveragePercentage(emptySummary), 'Not available yet');
     });
   });
 
-  describe('EnvironmentOverview Component', () => {
+  describe('STATE 2: QualityPipeline Component', () => {
+    it('should render V1-V4 lifecycle stages with real progression data', () => {
+      const html = renderToString(
+        <MemoryRouter>
+          <QualityPipeline qualityData={mockQualityDataFull} />
+        </MemoryRouter>,
+      );
+
+      assert.ok(html.includes('Quality Pipeline'), 'Must render pipeline title');
+      assert.ok(html.includes('Repository'), 'Must render Repository stage');
+      assert.ok(html.includes('Requirements'), 'Must render Requirements stage');
+      assert.ok(html.includes('Intelligence'), 'Must render Intelligence stage');
+      assert.ok(html.includes('AI Tests'), 'Must render AI Tests stage');
+      assert.ok(html.includes('Traceability'), 'Must render Traceability stage');
+      assert.ok(html.includes('18 Vectors'), 'Must render embedding vector count');
+      assert.ok(html.includes('42 Tests'), 'Must render test count in pipeline');
+    });
+  });
+
+  describe('STATE 2: NeedsAttentionPanel Component', () => {
+    it('should render actionable items when issues exist in the project', () => {
+      const html = renderToString(
+        <MemoryRouter>
+          <NeedsAttentionPanel project={mockProjectDetails} qualityData={mockQualityDataFull} />
+        </MemoryRouter>,
+      );
+
+      assert.ok(html.includes('Needs Attention'), 'Must render attention title');
+      assert.ok(html.includes('3 stale test cases'), 'Must alert about stale tests');
+      assert.ok(
+        html.includes('2 uncovered requirements'),
+        'Must alert about uncovered requirements',
+      );
+      assert.ok(
+        html.includes('2 test version reviews pending'),
+        'Must alert about pending reviews',
+      );
+    });
+
+    it('should render nominal clean status when no issues require attention', () => {
+      const nominalQualityData: ProjectQualityData = {
+        requirementsSummary: {
+          totalCount: 10,
+          countsByStatus: { DRAFT: 0, ACTIVE: 10, DEPRECATED: 0, ARCHIVED: 0 },
+          countsByType: {
+            FUNCTIONAL: 10,
+            NON_FUNCTIONAL: 0,
+            INTEGRATION: 0,
+            SECURITY: 0,
+            PERFORMANCE: 0,
+            BUSINESS_RULE: 0,
+            USABILITY: 0,
+            DATA: 0,
+            CONSTRAINT: 0,
+            UNKNOWN: 0,
+          },
+          countsByPriority: { LOW: 0, MEDIUM: 10, HIGH: 0, CRITICAL: 0, UNSPECIFIED: 0 },
+        },
+        testCasesTotal: 10,
+        coverageSummary: {
+          projectId: '11111111-1111-1111-1111-111111111111',
+          totalRequirements: 10,
+          eligibleRequirements: 10,
+          coveredCount: 10,
+          partiallyCoveredCount: 0,
+          uncoveredCount: 0,
+          notApplicableCount: 0,
+          unknownCount: 0,
+          overallCoveragePercentage: 100,
+          overallWithPartialPercentage: 100,
+          totalLinkedTests: 10,
+          currentValidTests: 10,
+          staleTests: 0,
+          orphanTests: 0,
+          dimensionSummaries: [],
+          topGaps: [],
+          lastEvaluatedAt: dummyDateStr,
+        },
+        source: {
+          id: 'src-1',
+          projectId: '11111111-1111-1111-1111-111111111111',
+          kind: 'LOCAL_DIRECTORY',
+          displayName: 'garment-erp',
+          rootPath: '/workspaces/garment-erp',
+          identityFingerprint: 'fp-1',
+          activeBaselineSnapshotId: null,
+          availability: 'AVAILABLE',
+          filesystemCreatedAt: dummyDateStr,
+          filesystemModifiedAt: dummyDateStr,
+          metadataRefreshedAt: dummyDateStr,
+          lastValidatedAt: dummyDateStr,
+          createdAt: dummyDateStr,
+          updatedAt: dummyDateStr,
+        },
+        indexStatus: {
+          isIndexed: true,
+          isRunning: false,
+          schemaVersion: 1,
+          parserVersion: 1,
+          summary: null,
+          lastIndexedAt: dummyDateStr,
+        },
+        reviewQueueTotal: 0,
+        embeddingStatus: null,
+      };
+
+      const html = renderToString(
+        <MemoryRouter>
+          <NeedsAttentionPanel project={mockProjectDetails} qualityData={nominalQualityData} />
+        </MemoryRouter>,
+      );
+
+      assert.ok(html.includes('Nothing requires attention'), 'Must render nominal status message');
+      assert.ok(html.includes('Nominal'), 'Must render nominal badge');
+    });
+  });
+
+  describe('STATE 2: EnvironmentOverview Component', () => {
     it('should render environment table with default environment listed first and URLs preserved', () => {
       const html = renderToString(
         <MemoryRouter>
@@ -141,46 +534,8 @@ describe('Project Dashboard UI & State Unit Tests', () => {
     });
   });
 
-  describe('QualityWorkspace Component (Honest Data Audit)', () => {
-    it('should render future QA module cards with "Not available" status and no fake numeric metrics', () => {
-      const html = renderToString(
-        <MemoryRouter>
-          <QualityWorkspace />
-        </MemoryRouter>,
-      );
-
-      // Section Header
-      assert.ok(html.includes('Quality Engineering Workspace'), 'Must render workspace title');
-
-      // Module Cards
-      assert.ok(html.includes('Requirements'), 'Must render Requirements card');
-      assert.ok(html.includes('Test Cases'), 'Must render Test Cases card');
-      assert.ok(html.includes('Test Runs'), 'Must render Test Runs card');
-      assert.ok(html.includes('Defects'), 'Must render Defects card');
-      assert.ok(html.includes('Reports'), 'Must render Reports card');
-      assert.ok(html.includes('Traceability Matrix'), 'Must render Traceability Matrix card');
-
-      // Honest Data Indicators
-      assert.ok(html.includes('Not available'), 'Must display Not available badge');
-      assert.ok(
-        html.includes('No data available for this project'),
-        'Must display honest no data notice',
-      );
-
-      // Verify NO fake metrics or counters
-      assert.strictEqual(html.includes('88.7%'), false, 'Must NOT render fake coverage percentage');
-      assert.strictEqual(html.includes('418'), false, 'Must NOT render fake generated test count');
-      assert.strictEqual(html.includes('284 passed'), false, 'Must NOT render fake passed tests');
-      assert.strictEqual(
-        html.includes('24 confirmed'),
-        false,
-        'Must NOT render fake confirmed bugs',
-      );
-    });
-  });
-
-  describe('ProjectDashboard No Project Empty State', () => {
-    it('should render No Project Selected empty state when no project ID is in context', () => {
+  describe('ProjectDashboard Container Orchestration', () => {
+    it('should render No Project Selected getting-started dashboard when no project ID is selected', () => {
       const html = renderToString(
         <MemoryRouter>
           <ProjectProvider>
@@ -189,12 +544,16 @@ describe('Project Dashboard UI & State Unit Tests', () => {
         </MemoryRouter>,
       );
 
-      assert.ok(html.includes('No Project Selected'), 'Must render empty state title');
       assert.ok(
-        html.includes('Select a project from the sidebar selector or create a new project'),
-        'Must render instructions',
+        html.includes('data-testid="no-project-overview"'),
+        'Must render no-project overview container',
       );
-      assert.ok(html.includes('Go to Projects'), 'Must render navigation button');
+      assert.ok(
+        html.includes('Start your quality engineering workspace'),
+        'Must render Getting Started panel',
+      );
+      assert.ok(html.includes('Platform Health'), 'Must render Platform Health panel');
+      assert.ok(html.includes('Recent Projects'), 'Must render Recent Projects panel');
     });
   });
 
