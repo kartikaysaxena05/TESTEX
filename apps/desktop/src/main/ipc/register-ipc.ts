@@ -227,6 +227,50 @@ import {
   handleRegenerateTestCase,
   handleRejectTestVersion,
 } from './test-review-handlers.js';
+import {
+  handleGetTargetApplication,
+  handleUpdateTargetApplication,
+  handleListEnvironments,
+  handleGetEnvironment,
+  handleCreateEnvironment as handleCreatePhase59Environment,
+  handleUpdateEnvironment as handleUpdatePhase59Environment,
+  handleDeleteEnvironment as handleDeletePhase59Environment,
+  handleSetDefaultEnvironment as handleSetDefaultPhase59Environment,
+  handleCheckEnvironmentReachability,
+  handleResolveEnvironmentSnapshot,
+} from './environment-handlers.js';
+import {
+  handleCompilePlan,
+  handleGetPlan,
+  handleGetPlanByTestCase,
+  handleListPlans,
+  handlePreviewPlan,
+} from './plan-compiler-handlers.js';
+import {
+  handleEnqueueTestRun,
+  handleGetTestRun,
+  handleListTestRuns,
+  handleCancelTestRun,
+  handleGetTestRunQueueState,
+} from './test-run-handlers.js';
+import {
+  handleCreateAuthProfile,
+  handleGetAuthProfile,
+  handleListAuthProfiles,
+  handleUpdateAuthProfile,
+  handleDeleteAuthProfile,
+  handleValidateAuthProfile,
+} from './auth-profile-handlers.js';
+import {
+  handleCreateAgentSession,
+  handleGetAgentSession,
+  handleListAgentSessions,
+  handleDeleteAgentSession,
+  handleSendAgentMessage,
+  handleApproveAgentAction,
+  handleAgentRunControl,
+  handleGetAgentEvidence,
+} from './conversational-agent-handlers.js';
 import { handleReportRendererError } from './logging-handlers.js';
 import {
   handleCreateAgentRuntimeTask,
@@ -574,6 +618,28 @@ const ALLOWED_ERROR_CODES: readonly DesktopErrorCode[] = [
   'TEST_REVIEW_INVALID_TRANSITION',
   'TEST_REGENERATION_FAILED',
   'TEST_REVIEW_VALIDATION_FAILED',
+  'COMPILER_VALIDATION_ERROR',
+  'TEST_RUN_NOT_FOUND',
+  'TEST_RUN_ALREADY_TERMINAL',
+  'TEST_RUN_INVALID_STATE_TRANSITION',
+  'TEST_RUN_QUEUE_FULL',
+  'TEST_RUN_CANCELLATION_REJECTED',
+  'TEST_RUN_CONCURRENCY_ERROR',
+  'TEST_RUN_VALIDATION_ERROR',
+  'TEST_RUN_PLAN_NOT_FOUND',
+  'TEST_RUN_PLAN_NOT_EXECUTABLE',
+  'TEST_RUN_STALE_ERROR',
+  'AUTH_PROFILE_NOT_FOUND',
+  'AUTH_PROFILE_PROJECT_MISMATCH',
+  'AUTH_PROFILE_DUPLICATE_NAME',
+  'AUTH_PROFILE_VALIDATION_ERROR',
+  'AGENT_SESSION_NOT_FOUND',
+  'AGENT_INVALID_REQUEST',
+  'AGENT_TOOL_FAILED',
+  'AGENT_APPROVAL_REQUIRED',
+  'AGENT_RUN_NOT_FOUND',
+  'AGENT_EVIDENCE_NOT_FOUND',
+  'AGENT_EXECUTION_FAILED',
   'INTERNAL_ERROR',
   'AGENT_TIMEOUT',
   'AGENT_CANCELLED',
@@ -2732,6 +2798,320 @@ export function registerIpcHandlers(): void {
     ),
   );
 
+  // V5 Phase 59: Target Application & Environments
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TARGET_APP_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TARGET_APP_GET,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleGetTargetApplication(
+          event,
+          typeof payload === 'string' ? payload : (payload as { projectId: string })?.projectId,
+        ),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TARGET_APP_UPDATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TARGET_APP_UPDATE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleUpdateTargetApplication(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.ENVIRONMENT_LIST,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.ENVIRONMENT_LIST,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleListEnvironments(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.ENVIRONMENT_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.ENVIRONMENT_GET,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleGetEnvironment(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.ENVIRONMENT_CREATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.ENVIRONMENT_CREATE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleCreatePhase59Environment(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.ENVIRONMENT_UPDATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.ENVIRONMENT_UPDATE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleUpdatePhase59Environment(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.ENVIRONMENT_DELETE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.ENVIRONMENT_DELETE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleDeletePhase59Environment(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.ENVIRONMENT_SET_DEFAULT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.ENVIRONMENT_SET_DEFAULT,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleSetDefaultPhase59Environment(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.ENVIRONMENT_CHECK_REACHABILITY,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.ENVIRONMENT_CHECK_REACHABILITY,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleCheckEnvironmentReachability(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.ENVIRONMENT_RESOLVE_SNAPSHOT,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.ENVIRONMENT_RESOLVE_SNAPSHOT,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleResolveEnvironmentSnapshot(event, payload as any),
+    ),
+  );
+
+  // V5 Phase 60: Executable Test Plan Compiler
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLAN_COMPILER_COMPILE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.PLAN_COMPILER_COMPILE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleCompilePlan(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLAN_COMPILER_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.PLAN_COMPILER_GET,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleGetPlan(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLAN_COMPILER_GET_BY_TEST_CASE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.PLAN_COMPILER_GET_BY_TEST_CASE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleGetPlanByTestCase(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLAN_COMPILER_LIST,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.PLAN_COMPILER_LIST,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleListPlans(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.PLAN_COMPILER_PREVIEW,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.PLAN_COMPILER_PREVIEW,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handlePreviewPlan(event, payload as any),
+    ),
+  );
+
+  // V5 Phase 61: Test Run Orchestration, Queue & Execution
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TEST_RUN_ENQUEUE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TEST_RUN_ENQUEUE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleEnqueueTestRun(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TEST_RUN_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TEST_RUN_GET,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleGetTestRun(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TEST_RUN_LIST,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TEST_RUN_LIST,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleListTestRuns(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TEST_RUN_CANCEL,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TEST_RUN_CANCEL,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleCancelTestRun(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.TEST_RUN_GET_QUEUE_STATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.TEST_RUN_GET_QUEUE_STATE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleGetTestRunQueueState(event, payload as any),
+    ),
+  );
+
+  // V5 Phase 62: Browser Session & Authentication Profiles
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_PROFILE_CREATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_PROFILE_CREATE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleCreateAuthProfile(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_PROFILE_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_PROFILE_GET,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleGetAuthProfile(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_PROFILE_LIST,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_PROFILE_LIST,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleListAuthProfiles(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_PROFILE_UPDATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_PROFILE_UPDATE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleUpdateAuthProfile(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_PROFILE_DELETE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_PROFILE_DELETE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleDeleteAuthProfile(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AUTH_PROFILE_VALIDATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AUTH_PROFILE_VALIDATE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleValidateAuthProfile(event, payload as any),
+    ),
+  );
+
+  // V8 Phase 124: Conversational AI Testing Agent
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_SESSION_CREATE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AGENT_SESSION_CREATE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleCreateAgentSession(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_SESSION_GET,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AGENT_SESSION_GET,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleGetAgentSession(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_SESSION_LIST,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AGENT_SESSION_LIST,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleListAgentSessions(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_SESSION_DELETE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AGENT_SESSION_DELETE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleDeleteAgentSession(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_SEND_MESSAGE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AGENT_SEND_MESSAGE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleSendAgentMessage(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_APPROVE_ACTION,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AGENT_APPROVE_ACTION,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleApproveAgentAction(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_RUN_CONTROL,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AGENT_RUN_CONTROL,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleAgentRunControl(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.AGENT_GET_EVIDENCE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.AGENT_GET_EVIDENCE,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleGetAgentEvidence(event, payload as any),
+    ),
+  );
+
   // Renderer Diagnostic Error Reporting (Narrow IPC)
   ipcMain.handle(
     DESKTOP_CHANNELS.LOGGING_REPORT_RENDERER_ERROR,
@@ -3459,6 +3839,51 @@ export function unregisterIpcHandlers(): void {
     ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_REVIEW_REGENERATE);
     ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_REVIEW_GET_HISTORY);
     ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_REVIEW_COMPARE_VERSIONS);
+
+    // Phase 59: Target Application & Environments
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TARGET_APP_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TARGET_APP_UPDATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.ENVIRONMENT_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.ENVIRONMENT_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.ENVIRONMENT_CREATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.ENVIRONMENT_UPDATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.ENVIRONMENT_DELETE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.ENVIRONMENT_SET_DEFAULT);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.ENVIRONMENT_CHECK_REACHABILITY);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.ENVIRONMENT_RESOLVE_SNAPSHOT);
+
+    // Phase 60: Plan Compiler
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLAN_COMPILER_COMPILE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLAN_COMPILER_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLAN_COMPILER_GET_BY_TEST_CASE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLAN_COMPILER_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.PLAN_COMPILER_PREVIEW);
+
+    // Phase 61: Test Run Orchestration
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_RUN_ENQUEUE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_RUN_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_RUN_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_RUN_CANCEL);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_RUN_GET_QUEUE_STATE);
+
+    // Phase 62: Auth Profiles
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_PROFILE_CREATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_PROFILE_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_PROFILE_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_PROFILE_UPDATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_PROFILE_DELETE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AUTH_PROFILE_VALIDATE);
+
+    // Phase 124: Conversational Testing Agent
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_SESSION_CREATE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_SESSION_GET);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_SESSION_LIST);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_SESSION_DELETE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_SEND_MESSAGE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_APPROVE_ACTION);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_RUN_CONTROL);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_GET_EVIDENCE);
+
     ipcMain.removeHandler(DESKTOP_CHANNELS.LOGGING_REPORT_RENDERER_ERROR);
     ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_RUNTIME_TASK_CREATE);
     ipcMain.removeHandler(DESKTOP_CHANNELS.AGENT_RUNTIME_TASK_GET);
