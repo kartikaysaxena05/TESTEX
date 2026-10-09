@@ -44,6 +44,17 @@ export function ViewRequirementModal({
   onArchiveToggle,
   onDelete,
 }: ViewRequirementModalProps): React.JSX.Element | null {
+  React.useEffect(() => {
+    if (!requirement) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [requirement, onClose]);
+
   if (!requirement) return null;
 
   const getPriorityVariant = (priority: string): BadgeVariant => {
@@ -76,19 +87,63 @@ export function ViewRequirementModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 sm:p-6"
+      className="req-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1000,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.5rem',
+      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="view-requirement-title"
+      onClick={e => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <div
-        className="relative w-full max-w-4xl max-h-[92vh] bg-[#161616] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        className="req-modal-card req-modal-card-lg relative w-full max-w-4xl flex flex-col overflow-hidden"
         style={{
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          position: 'relative',
+          width: '100%',
+          maxWidth: '56rem',
+          maxHeight: '90vh',
+          height: 'min(90vh, 920px)',
+          backgroundColor: '#141414',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          borderRadius: '16px',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
         }}
       >
         {/* Fixed Header */}
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between flex-shrink-0 bg-[#161616]">
+        <div
+          className="req-modal-header px-6 py-4 flex items-center justify-between flex-shrink-0"
+          style={{
+            flexShrink: 0,
+            backgroundColor: '#181818',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            padding: '14px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            zIndex: 10,
+          }}
+        >
           <div className="flex items-center gap-3 min-w-0">
             <span className="font-mono text-sm font-bold text-sky-400 bg-sky-950/60 border border-sky-800/60 px-2.5 py-1 rounded flex-shrink-0">
               {requirement.requirementKey}
@@ -96,6 +151,7 @@ export function ViewRequirementModal({
             <h2
               id="view-requirement-title"
               className="text-base font-semibold text-neutral-100 truncate"
+              title={requirement.title}
             >
               {requirement.title}
             </h2>
@@ -103,7 +159,19 @@ export function ViewRequirementModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-neutral-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 flex-shrink-0 ml-3"
+            className="req-modal-close-btn"
+            style={{
+              color: '#a3a3a3',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              padding: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'transparent',
+              border: 'none',
+              flexShrink: 0,
+            }}
             aria-label="Close"
           >
             <svg
@@ -123,7 +191,20 @@ export function ViewRequirementModal({
         </div>
 
         {/* Scrollable Body */}
-        <div className="p-6 space-y-6 flex-1 overflow-y-auto overscroll-contain">
+        <div
+          className="req-modal-body p-6 space-y-6 flex-1 overflow-y-auto overscroll-contain"
+          style={{
+            flex: '1 1 0%',
+            minHeight: 0,
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+            padding: '24px',
+            backgroundColor: '#141414',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+          }}
+        >
           {/* Metadata badges */}
           <div className="flex flex-wrap gap-2 items-center">
             <Badge variant={getStatusVariant(requirement.status)}>
@@ -308,7 +389,19 @@ export function ViewRequirementModal({
         </div>
 
         {/* Fixed Action bar */}
-        <div className="px-6 py-4 border-t border-white/10 bg-[#141414] flex items-center justify-between flex-shrink-0 gap-3">
+        <div
+          className="req-modal-footer px-6 py-4 flex items-center justify-between flex-shrink-0 gap-3"
+          style={{
+            flexShrink: 0,
+            backgroundColor: '#111111',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            padding: '14px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+          }}
+        >
           <div className="flex flex-wrap gap-2">
             {!isArchivedProject && (
               <>

@@ -461,6 +461,11 @@ import {
   handleInvalidateProjectContext,
   handleGetProjectContextStatus,
 } from './project-context-handlers.js';
+import {
+  FAILURE_AND_DEFECT_ERROR_CODES,
+  registerFailureAndDefectIpc,
+  unregisterFailureAndDefectIpc,
+} from './register-failure-and-defect-ipc.js';
 
 let isIpcRegistered = false;
 
@@ -708,6 +713,7 @@ const ALLOWED_ERROR_CODES: readonly DesktopErrorCode[] = [
   'TARGET_ENV_PROD_SAFETY_VIOLATION',
   'PROJECT_CONTEXT_NOT_FOUND',
   'PROJECT_CONTEXT_ACCESS_DENIED',
+  ...FAILURE_AND_DEFECT_ERROR_CODES,
 ];
 
 /**
@@ -3656,6 +3662,9 @@ export function registerIpcHandlers(): void {
     ),
   );
 
+  // V6-V7 Failure Intelligence, Jira Integration & Defect Remediation
+  registerFailureAndDefectIpc(ipcMain, createSafeIpcHandler);
+
   isIpcRegistered = true;
 }
 
@@ -4072,6 +4081,9 @@ export function unregisterIpcHandlers(): void {
     ipcMain.removeHandler(DESKTOP_CHANNELS.PROJECT_CONTEXT_STATUS);
 
     ipcMain.removeHandler(DESKTOP_CHANNELS.PROJECTS_MARK_OPENED);
+
+    // V6-V7 Failure Intelligence, Jira Integration & Defect Remediation
+    unregisterFailureAndDefectIpc(ipcMain);
   }
 
   isIpcRegistered = false;

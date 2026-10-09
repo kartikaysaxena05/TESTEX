@@ -178,20 +178,73 @@ export function AddEditRequirementModal({
     }
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isSubmitting) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isSubmitting, onClose]);
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 sm:p-6"
+      className="req-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1000,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.5rem',
+      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="requirement-modal-title"
+      onClick={e => {
+        if (e.target === e.currentTarget && !isSubmitting) {
+          onClose();
+        }
+      }}
     >
       <div
-        className="relative w-full max-w-2xl max-h-[92vh] bg-[#161616] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        className="req-modal-card relative w-full max-w-2xl flex flex-col overflow-hidden"
         style={{
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          position: 'relative',
+          width: '100%',
+          maxWidth: '44rem',
+          maxHeight: '90vh',
+          backgroundColor: '#141414',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          borderRadius: '16px',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
         }}
       >
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between flex-shrink-0 bg-[#161616]">
+        <div
+          className="req-modal-header px-6 py-4 flex items-center justify-between flex-shrink-0"
+          style={{
+            flexShrink: 0,
+            backgroundColor: '#181818',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            padding: '14px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+          }}
+        >
           <h2 id="requirement-modal-title" className="text-lg font-semibold text-neutral-100">
             {isEditing
               ? `Edit Requirement: ${editingRequirement?.requirementKey}`
@@ -201,7 +254,19 @@ export function AddEditRequirementModal({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-neutral-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 flex-shrink-0"
+            className="req-modal-close-btn"
+            style={{
+              color: '#a3a3a3',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              padding: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'transparent',
+              border: 'none',
+              flexShrink: 0,
+            }}
             aria-label="Close"
           >
             <svg
@@ -220,8 +285,28 @@ export function AddEditRequirementModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="p-6 space-y-4 flex-1 overflow-y-auto overscroll-contain">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col flex-1 min-h-0 overflow-hidden"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flex: '1 1 0%',
+            minHeight: 0,
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            className="req-modal-body p-6 space-y-4 flex-1 overflow-y-auto overscroll-contain"
+            style={{
+              flex: '1 1 0%',
+              minHeight: 0,
+              overflowY: 'auto',
+              overscrollBehavior: 'contain',
+              padding: '24px',
+              backgroundColor: '#141414',
+            }}
+          >
           {submitError && (
             <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-sm text-rose-400">
               {submitError}
@@ -363,7 +448,19 @@ export function AddEditRequirementModal({
           </div>
         </div>
 
-          <div className="px-6 py-4 border-t border-white/10 bg-[#141414] flex items-center justify-end gap-3 flex-shrink-0">
+          <div
+            className="req-modal-footer px-6 py-4 flex items-center justify-end gap-3 flex-shrink-0"
+            style={{
+              flexShrink: 0,
+              backgroundColor: '#111111',
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+              padding: '14px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '12px',
+            }}
+          >
             <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
