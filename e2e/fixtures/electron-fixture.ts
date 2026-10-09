@@ -103,7 +103,7 @@ export const test = base.extend<ElectronTestFixtures>({
   },
 
   // 5. Convenience helper to log in via React UI form
-  loginAs: async ({ window }, use) => {
+  loginAs: async ({ window, ipcMock }, use) => {
     const loginFn = async (credentials?: { email?: string; password?: string }) => {
       const email = credentials?.email ?? 'lead.qa@sqe.platform';
       const password = credentials?.password ?? 'Password123!';

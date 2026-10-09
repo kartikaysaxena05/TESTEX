@@ -328,5 +328,97 @@ export class IpcMock {
       platform: process.platform,
       arch: process.arch,
     });
+
+    // Project Details & Context
+    await this.handle('desktop:projects:get', {
+      id: 'proj-e2e-sqe',
+      name: 'SQE Core Platform',
+      key: 'SQE',
+      description: 'Core Quality Platform for Autonomous QA',
+      status: 'ACTIVE',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    await this.handle('desktop:project-context:get', {
+      status: 'IDLE',
+      projectId: 'proj-e2e-sqe',
+    });
+
+    // Requirements
+    await this.handle('desktop:requirements:list', {
+      items: [
+        {
+          id: 'req-e2e-1',
+          projectId: 'proj-e2e-sqe',
+          requirementKey: 'REQ-001',
+          title: 'User Authentication Workflow',
+          originalText: 'Users must be able to log in securely.',
+          type: 'FUNCTIONAL',
+          priority: 'HIGH',
+          status: 'ACTIVE',
+          currentVersionNumber: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+      total: 1,
+      page: 1,
+      pageSize: 50,
+      totalPages: 1,
+    });
+
+    await this.handle('desktop:requirements:get-summary', {
+      totalCount: 1,
+      countsByStatus: { ACTIVE: 1, DRAFT: 0, ARCHIVED: 0, DEPRECATED: 0 },
+      countsByType: { FUNCTIONAL: 1 },
+      countsByPriority: { HIGH: 1 },
+    });
+
+    // Test Cases
+    await this.handle('desktop:test-cases:list', {
+      items: [
+        {
+          id: 'tc-e2e-1',
+          projectId: 'proj-e2e-sqe',
+          testCaseKey: 'TC-001',
+          title: 'Verify Login with Valid Credentials',
+          description: 'Standard login test',
+          type: 'FUNCTIONAL',
+          priority: 'HIGH',
+          reviewStatus: 'APPROVED',
+          executionSuitability: 'AUTOMATED',
+          currentVersionNumber: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+      total: 1,
+      page: 1,
+      pageSize: 50,
+      totalPages: 1,
+    });
+
+    // Test Runs
+    await this.handle('desktop:test-runs:list', []);
+    await this.handle('desktop:test-runs:get-queue-state', {
+      queueDepth: 0,
+      activeWorkers: 0,
+      runningRuns: [],
+    });
+
+    // Sources & Git
+    await this.handle('desktop:sources:get', null);
+    await this.handle('desktop:git:status', null);
+
+    // Settings Profile & Auth Methods
+    await this.handle('desktop:settings:get-profile', {
+      id: 'usr-e2e-lead-qa',
+      displayName: 'Lead QA Engineer',
+      email: 'lead.qa@sqe.platform',
+      role: 'ADMIN',
+    });
+    await this.handle('desktop:settings:get-auth-methods', []);
+    await this.handle('desktop:settings:get-sessions', []);
   }
 }

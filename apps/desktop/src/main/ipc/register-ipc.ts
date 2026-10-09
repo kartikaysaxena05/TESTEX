@@ -228,6 +228,11 @@ import {
   handleRejectTestVersion,
 } from './test-review-handlers.js';
 import {
+  handleGetExecutionCapabilities,
+  handleRunRuntimeSmoke,
+  handleValidateTestEligibility,
+} from './execution-handlers.js';
+import {
   handleGetTargetApplication,
   handleUpdateTargetApplication,
   handleListEnvironments,
@@ -623,6 +628,21 @@ const ALLOWED_ERROR_CODES: readonly DesktopErrorCode[] = [
   'TEST_REVIEW_INVALID_TRANSITION',
   'TEST_REGENERATION_FAILED',
   'TEST_REVIEW_VALIDATION_FAILED',
+  'EXECUTION_REQUEST_INVALID',
+  'EXECUTION_PROJECT_MISMATCH',
+  'EXECUTION_TEST_NOT_FOUND',
+  'EXECUTION_TEST_NOT_APPROVED',
+  'EXECUTION_TEST_STALE',
+  'EXECUTION_TEST_REJECTED',
+  'EXECUTION_TEST_NOT_EXECUTABLE',
+  'BROWSER_LAUNCH_FAILED',
+  'BROWSER_RUNTIME_ERROR',
+  'BROWSER_UNAVAILABLE',
+  'BROWSER_UNSUPPORTED',
+  'EXECUTION_TIMEOUT',
+  'EXECUTION_CLEANUP_FAILED',
+  'EXECUTION_CONCURRENCY_LIMIT',
+  'EXECUTION_SECURITY_VIOLATION',
   'COMPILER_VALIDATION_ERROR',
   'TEST_RUN_NOT_FOUND',
   'TEST_RUN_ALREADY_TERMINAL',
@@ -2804,6 +2824,33 @@ export function registerIpcHandlers(): void {
     ),
   );
 
+  // V5 Phase 58: Autonomous Test Execution Foundation
+  ipcMain.handle(
+    DESKTOP_CHANNELS.EXECUTION_GET_CAPABILITIES,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.EXECUTION_GET_CAPABILITIES,
+      (event: IpcMainInvokeEvent) => handleGetExecutionCapabilities(event),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.EXECUTION_RUNTIME_SMOKE,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.EXECUTION_RUNTIME_SMOKE,
+      (event: IpcMainInvokeEvent, payload?: unknown) =>
+        handleRunRuntimeSmoke(event, payload as any),
+    ),
+  );
+
+  ipcMain.handle(
+    DESKTOP_CHANNELS.EXECUTION_VALIDATE_ELIGIBILITY,
+    createSafeIpcHandler(
+      DESKTOP_CHANNELS.EXECUTION_VALIDATE_ELIGIBILITY,
+      (event: IpcMainInvokeEvent, payload: unknown) =>
+        handleValidateTestEligibility(event, payload as any),
+    ),
+  );
+
   // V5 Phase 59: Target Application & Environments
   ipcMain.handle(
     DESKTOP_CHANNELS.TARGET_APP_GET,
@@ -3848,6 +3895,11 @@ export function unregisterIpcHandlers(): void {
     ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_REVIEW_REGENERATE);
     ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_REVIEW_GET_HISTORY);
     ipcMain.removeHandler(DESKTOP_CHANNELS.TEST_REVIEW_COMPARE_VERSIONS);
+
+    // Phase 58: Autonomous Test Execution Foundation
+    ipcMain.removeHandler(DESKTOP_CHANNELS.EXECUTION_GET_CAPABILITIES);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.EXECUTION_RUNTIME_SMOKE);
+    ipcMain.removeHandler(DESKTOP_CHANNELS.EXECUTION_VALIDATE_ELIGIBILITY);
 
     // Phase 59: Target Application & Environments
     ipcMain.removeHandler(DESKTOP_CHANNELS.TARGET_APP_GET);

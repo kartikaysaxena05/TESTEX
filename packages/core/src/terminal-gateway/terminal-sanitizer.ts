@@ -36,14 +36,14 @@ const ALLOWED_ENV_KEYS = new Set([
  * Common patterns for tokens, keys, passwords, and secrets in output.
  */
 const SECRET_REGEX_PATTERNS = [
-  /(?:bearer\s+)([a-zA-Z0-9_\-\.]{16,})/gi,
-  /(?:api[_-]?key[=:\s]+)([a-zA-Z0-9_\-]{16,})/gi,
-  /(?:token[=:\s]+)([a-zA-Z0-9_\-]{16,})/gi,
+  /(?:bearer\s+)([a-zA-Z0-9_.-]{16,})/gi,
+  /(?:api[_-]?key[=:\s]+)([a-zA-Z0-9_-]{16,})/gi,
+  /(?:token[=:\s]+)([a-zA-Z0-9_-]{16,})/gi,
   /(?:password[=:\s]+)([^\s"';]+)/gi,
-  /(?:secret[=:\s]+)([a-zA-Z0-9_\-]{16,})/gi,
+  /(?:secret[=:\s]+)([a-zA-Z0-9_-]{16,})/gi,
   /ghp_[a-zA-Z0-9]{36}/g, // GitHub Personal Access Token
   /gho_[a-zA-Z0-9]{36}/g, // GitHub OAuth
-  /glpat-[a-zA-Z0-9_\-]{20,}/g, // GitLab Personal Access Token
+  /glpat-[a-zA-Z0-9_-]{20,}/g, // GitLab Personal Access Token
   /xox[baprs]-[0-9a-zA-Z]{10,48}/g, // Slack token
   /AKIA[0-9A-Z]{16}/g, // AWS Access Key
   /-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----/g,
@@ -88,13 +88,13 @@ export class TerminalSanitizer {
 
     let sanitized = output;
 
-    // 1. Redact via SecretRedactor
-    sanitized = SecretRedactor.redactText(sanitized);
-
-    // 2. Redact via regex patterns
+    // 1. Redact via regex patterns
     for (const pattern of SECRET_REGEX_PATTERNS) {
       sanitized = sanitized.replace(pattern, '[REDACTED_SECRET]');
     }
+
+    // 2. Redact via SecretRedactor
+    sanitized = SecretRedactor.redactText(sanitized);
 
     return sanitized;
   }

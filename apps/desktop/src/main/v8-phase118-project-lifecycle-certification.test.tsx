@@ -50,14 +50,11 @@ import {
 import {
   createProjectSchema,
   updateProjectSchema,
-  listProjectsSchema,
   type ProjectDetails,
   type ProjectSummary,
 } from '@ai-quality/contracts';
 
 import {
-  handleListProjects,
-  handleGetProject,
   handleCreateProject,
   handleUpdateProject,
   handleArchiveProject,
@@ -71,14 +68,17 @@ import { ProjectProvider } from '../renderer/context/ProjectContext.js';
 import { EmptyProjectSourceSelection } from '../renderer/features/projects/EmptyProjectSourceSelection.js';
 import { CreateProjectModal } from '../renderer/features/projects/CreateProjectModal.js';
 import { ProjectSettingsModal } from '../renderer/features/projects/ProjectSettingsModal.js';
-import { ProjectDashboard } from '../renderer/features/dashboard/ProjectDashboard.js';
 
 /**
  * High-fidelity in-memory Project Repository implementing all Phase 118 query and mutation contracts.
  */
 class InMemoryProjectRepository {
   public projects: Map<string, ProjectWithEnvironments> = new Map();
-  public audits: Array<{ action: string; userId: string | null; metadata?: Record<string, unknown> }> = [];
+  public audits: Array<{
+    action: string;
+    userId: string | null;
+    metadata?: Record<string, unknown>;
+  }> = [];
 
   reset(): void {
     this.projects.clear();
@@ -131,7 +131,9 @@ class InMemoryProjectRepository {
     if (opts.search && opts.search.trim().length > 0) {
       const q = opts.search.trim().toLowerCase();
       list = list.filter(
-        p => p.name.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q)),
+        p =>
+          p.name.toLowerCase().includes(q) ||
+          (p.description && p.description.toLowerCase().includes(q)),
       );
     }
 
@@ -225,7 +227,11 @@ class InMemoryProjectRepository {
     return p;
   }
 
-  async recordAudit(action: string, userId: string | null, metadata?: Record<string, unknown>): Promise<void> {
+  async recordAudit(
+    action: string,
+    userId: string | null,
+    metadata?: Record<string, unknown>,
+  ): Promise<void> {
     this.audits.push({ action, userId, metadata });
   }
 }
@@ -305,7 +311,10 @@ describe('V8 Phase 118 — Project Creation & Project Lifecycle Management Certi
         </ProjectProvider>
       </MemoryRouter>,
     );
-    assert.ok(html.includes('data-testid="create-project-submit-btn"'), 'Must render submit button');
+    assert.ok(
+      html.includes('data-testid="create-project-submit-btn"'),
+      'Must render submit button',
+    );
     assert.ok(html.includes('Create Project'), 'Must render button label');
 
     // Service handles sequential or concurrent creation cleanly without collision
@@ -346,7 +355,10 @@ describe('V8 Phase 118 — Project Creation & Project Lifecycle Management Certi
   // SUBTEST 5: Project Search (case-insensitive name/description)
   it('Subtest 5: Project Search performs case-insensitive filtering on name and description', async () => {
     await service.createProject({ name: 'Payment Gateway', description: 'Stripe integration' });
-    await service.createProject({ name: 'User Authentication', description: 'OAuth2 and JWT flows' });
+    await service.createProject({
+      name: 'User Authentication',
+      description: 'OAuth2 and JWT flows',
+    });
 
     // Search name lowercase
     const res1 = await service.listProjects({ search: 'payment' });
@@ -437,7 +449,11 @@ describe('V8 Phase 118 — Project Creation & Project Lifecycle Management Certi
 
     await Promise.all([fetchA, fetchB]);
 
-    assert.strictEqual(committedState, 'Project B Result', 'Late Project A response must be discarded');
+    assert.strictEqual(
+      committedState,
+      'Project B Result',
+      'Late Project A response must be discarded',
+    );
   });
 
   // SUBTEST 11: Project Rename & Metadata Update
@@ -509,7 +525,10 @@ describe('V8 Phase 118 — Project Creation & Project Lifecycle Management Certi
     assert.strictEqual(restored.archivedAt, null);
 
     const activeList = await service.listProjects({ status: 'ACTIVE' });
-    assert.ok(activeList.some(item => item.id === p.id), 'Must reappear in active list');
+    assert.ok(
+      activeList.some(item => item.id === p.id),
+      'Must reappear in active list',
+    );
   });
 
   // SUBTEST 16: Safe Deletion Guard (rejects deletion of ACTIVE project)
@@ -597,8 +616,14 @@ describe('V8 Phase 118 — Project Creation & Project Lifecycle Management Certi
 
   // SUBTEST 21: Authenticated Ownership Invariant (User A != User B)
   it('Subtest 21: Authenticated Ownership Invariant assigns distinct userId ownership per project', async () => {
-    const pAlice = await service.createProject({ name: 'Alice Project' }, '11111111-1111-1111-1111-111111111111');
-    const pBob = await service.createProject({ name: 'Bob Project' }, '22222222-2222-2222-2222-222222222222');
+    const pAlice = await service.createProject(
+      { name: 'Alice Project' },
+      '11111111-1111-1111-1111-111111111111',
+    );
+    const pBob = await service.createProject(
+      { name: 'Bob Project' },
+      '22222222-2222-2222-2222-222222222222',
+    );
 
     assert.strictEqual(pAlice.userId, '11111111-1111-1111-1111-111111111111');
     assert.strictEqual(pBob.userId, '22222222-2222-2222-2222-222222222222');
@@ -607,7 +632,10 @@ describe('V8 Phase 118 — Project Creation & Project Lifecycle Management Certi
 
   // SUBTEST 22: Cross-User Read Attack Rejection
   it('Subtest 22: Cross-User Read Attack Rejection prevents User B from reading User A project', async () => {
-    const pAlice = await service.createProject({ name: 'Alice Confidential' }, '11111111-1111-1111-1111-111111111111');
+    const pAlice = await service.createProject(
+      { name: 'Alice Confidential' },
+      '11111111-1111-1111-1111-111111111111',
+    );
 
     await assert.rejects(
       () => service.getProject(pAlice.id, '22222222-2222-2222-2222-222222222222'),
@@ -617,17 +645,27 @@ describe('V8 Phase 118 — Project Creation & Project Lifecycle Management Certi
 
   // SUBTEST 23: Cross-User Update Attack Rejection
   it('Subtest 23: Cross-User Update Attack Rejection prevents User B from modifying User A project', async () => {
-    const pAlice = await service.createProject({ name: 'Alice Platform' }, '11111111-1111-1111-1111-111111111111');
+    const pAlice = await service.createProject(
+      { name: 'Alice Platform' },
+      '11111111-1111-1111-1111-111111111111',
+    );
 
     await assert.rejects(
-      () => service.updateProject({ projectId: pAlice.id, name: 'Hacked Platform' }, '22222222-2222-2222-2222-222222222222'),
+      () =>
+        service.updateProject(
+          { projectId: pAlice.id, name: 'Hacked Platform' },
+          '22222222-2222-2222-2222-222222222222',
+        ),
       (err: any) => err instanceof ProjectAccessDeniedError && err.code === 'ACCESS_DENIED',
     );
   });
 
   // SUBTEST 24: Cross-User Delete Attack Rejection
   it('Subtest 24: Cross-User Delete Attack Rejection prevents User B from archiving or deleting User A project', async () => {
-    const pAlice = await service.createProject({ name: 'Alice Vital Project' }, '11111111-1111-1111-1111-111111111111');
+    const pAlice = await service.createProject(
+      { name: 'Alice Vital Project' },
+      '11111111-1111-1111-1111-111111111111',
+    );
 
     // Cross-user archive rejection
     await assert.rejects(
@@ -682,21 +720,17 @@ describe('V8 Phase 118 — Project Creation & Project Lifecycle Management Certi
     assert.ok(html.includes('Website'), 'Must offer Website choice card');
     assert.ok(html.includes('Repository'), 'Must offer Repository choice card');
     assert.ok(html.includes('Local Folder'), 'Must offer Local Folder choice card');
-    assert.ok(html.includes('Browser / Running App'), 'Must offer Browser / Running App choice card');
-    assert.ok(html.includes('Phase 119'), 'Must display Phase 119 boundary badge');
-    assert.ok(html.includes('Phase 120'), 'Must display Phase 120 boundary badge');
-    assert.ok(html.includes('Phase 121'), 'Must display Phase 121 boundary badge');
-    assert.ok(html.includes('Phase 122'), 'Must display Phase 122 boundary badge');
+    assert.ok(
+      html.includes('Browser / Running App'),
+      'Must offer Browser / Running App choice card',
+    );
+    assert.ok(html.includes('Active'), 'Must display Active badge for source cards');
 
     // Verify ProjectSettingsModal renders truthful archive & delete controls
     const settingsHtml = renderToString(
       <MemoryRouter>
         <ProjectProvider>
-          <ProjectSettingsModal
-            isOpen={true}
-            project={p}
-            onClose={() => {}}
-          />
+          <ProjectSettingsModal isOpen={true} project={p} onClose={() => {}} />
         </ProjectProvider>
       </MemoryRouter>,
     );

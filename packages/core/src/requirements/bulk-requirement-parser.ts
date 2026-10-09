@@ -130,27 +130,14 @@ export function parseBulkRequirementsText(rawText: string): ParseBulkRequirement
 
     // Plain line
     if (currentBlock) {
-      if (currentBlock.parseMethod === 'PLAIN_LINE' || currentBlock.parseMethod === 'PARAGRAPH') {
-        currentBlock.lines.push(trimmed);
-        currentBlock.lineEnd = lineNumber;
-        currentBlock.parseMethod = 'PARAGRAPH';
-      } else {
-        blocks.push(currentBlock);
-        currentBlock = {
-          lines: [trimmed],
-          lineStart: lineNumber,
-          lineEnd: lineNumber,
-          parseMethod: 'PLAIN_LINE',
-        };
-      }
-    } else {
-      currentBlock = {
-        lines: [trimmed],
-        lineStart: lineNumber,
-        lineEnd: lineNumber,
-        parseMethod: 'PLAIN_LINE',
-      };
+      blocks.push(currentBlock);
     }
+    currentBlock = {
+      lines: [trimmed],
+      lineStart: lineNumber,
+      lineEnd: lineNumber,
+      parseMethod: 'PLAIN_LINE',
+    };
   }
 
   if (currentBlock) {
